@@ -1,0 +1,3077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2f6fed">
+    <title>Zone Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Bright Gospel Blue theme */
+            --bg-body: #eef3ff;
+            --bg-card: #ffffff;
+            --primary: #2f6fed;
+            --primary-hover: #2558c4;
+            --primary-light: #e8f0ff;
+            --secondary: #f3f6fc;
+            --accent: #ffb800;         /* gold accent */
+            --accent-soft: #fff5da;
+            --accent-text: #6b4a00;
+            --text-main: #16233e;
+            --text-muted: #64708a;
+            --border: #dfe7f8;
+            --cookie-brown: #a9702f;
+            --danger: #ff4757;
+            --danger-soft: #ffe4e6;
+            --success: #1fb573;
+            --radius: 16px;
+            --shadow: 0 8px 24px rgba(31, 61, 122, 0.10);
+            --shadow-sm: 0 2px 8px rgba(31, 61, 122, 0.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        /* --- Login Screen Styling --- */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(160deg, #2f6fed 0%, #6a9bff 55%, #ffe6a3 130%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        #appContent {
+            display: none; /* Hidden until signed in */
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(20, 40, 90, 0.35);
+            padding: 40px 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+        }
+        .login-mark {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900;
+            font-size: 1.6rem;
+            margin: 0 auto 16px;
+        }
+
+        header {
+            background: linear-gradient(120deg, #2f6fed, #4d8bff);
+            color: #fff;
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 16px rgba(31, 61, 122, 0.25);
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        header .brand { display: flex; align-items: center; gap: 10px; }
+        header h1 { font-size: 1.4rem; letter-spacing: 0.2px; }
+        .brand-mark {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800;
+            font-size: 1.05rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        h1, h2, h3, h4 { margin-top: 0; font-weight: 800; }
+        h2 { color: var(--text-main); font-size: 1.4rem; margin-bottom: 18px; }
+
+        .admin-btn {
+            background-color: #ffffff;
+            color: var(--primary);
+            border: none;
+            padding: 9px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+        .admin-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        /* --- Top nav (desktop/tablet) --- */
+        .top-nav {
+            background-color: var(--bg-card);
+            display: flex;
+            gap: 8px;
+            padding: 12px 20px;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+            padding: 9px 18px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 700;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .top-nav .tab-btn:hover { background: var(--primary-light); color: var(--primary); }
+        .top-nav .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(47, 111, 237, 0.35);
+        }
+
+        /* --- Bottom tab bar (mobile) --- */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -6px 20px rgba(20, 40, 80, 0.10);
+            z-index: 500;
+            padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+            /* Forces GPU compositing for this layer -- without it, some mobile
+               browsers (particularly in-app WebViews) let a `position: fixed`
+               element drift with the page during momentum scrolling instead
+               of staying pinned to the viewport. */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            will-change: transform;
+        }
+        .bottom-nav-inner {
+            display: flex;
+            gap: 2px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .bottom-nav .tab-btn {
+            flex: 1 0 auto;
+            min-width: 66px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 7px 4px 5px;
+            font-size: 0.65rem;
+            border-radius: 12px;
+        }
+        .bottom-nav .tab-btn .icon { width: 21px; height: 21px; }
+        .bottom-nav .tab-btn.active { background: linear-gradient(160deg, #eaf1ff, #d9e6ff); color: var(--primary); box-shadow: none; }
+
+        main {
+            padding: 1.5rem 1.25rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* This must come AFTER the base `main` rule above -- same selector
+           specificity, so source order decides, and the mobile bottom-nav
+           clearance needs to win over the base padding shorthand. (Two
+           earlier attempts to fix "can't scroll to the bottom" bumped this
+           value without effect because the rule was ordered before the
+           base rule and silently got overwritten -- this was the actual bug.) */
+        @media (max-width: 768px) {
+            .top-nav { display: none; }
+            .bottom-nav { display: block; }
+            main { padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
+            header h1 { font-size: 1.2rem; }
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--bg-card);
+            padding: 22px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+        }
+        .card h3 {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+        }
+
+        /* Icons */
+        .icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+        /* Collapsible sections */
+        details.section-card { display: block; }
+        details.section-card > summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        details.section-card > summary::-webkit-details-marker { display: none; }
+        details.section-card .chevron {
+            width: 20px; height: 20px;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+        details.section-card[open] > summary .chevron { transform: rotate(180deg); }
+        details.section-card .section-body { margin-top: 16px; }
+        details.section-card .summary-controls { display: flex; align-items: center; gap: 10px; }
+        .section-default-btn {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: inherit;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .section-default-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
+
+        .empty-hint { color: var(--text-muted); font-size: 0.9rem; padding: 6px 0; }
+
+        .editable {
+            padding: 10px;
+            border: 2px dashed transparent;
+            border-radius: 12px;
+            transition: all 0.2s;
+            line-height: 1.6;
+        }
+        .editable p { margin-top: 0; }
+        .editable.editing {
+            border: 2px dashed rgba(47, 111, 237, 0.35);
+            background: linear-gradient(160deg, #f3f7ff, #eef3ff);
+        }
+
+        /* Urgent Badge */
+        .urgent-badge {
+            background: var(--danger);
+            color: white;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+
+        /* Data rows: meetings / events */
+        .data-row {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .data-row:last-child { margin-bottom: 0; }
+        .data-row-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+        .data-row-head h4 { margin: 0; font-size: 1rem; color: var(--text-main); }
+        .data-row-desc { color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 8px 0; line-height: 1.5; }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .badge-pill.badge-today { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+        /* Birthdays */
+        .birthday-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .birthday-row:last-child { border-bottom: none; }
+        .birthday-avatar {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .birthday-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .birthday-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .birthday-info strong { color: var(--text-main); font-size: 0.95rem; overflow-wrap: anywhere; }
+        .birthday-info .text-muted { font-size: 0.82rem; color: var(--text-muted); }
+
+        /* Leader Profiles */
+        .leader-card {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .leader-emoji {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .leader-emoji img { width: 100%; height: 100%; object-fit: cover; }
+        .leader-info { flex: 1; min-width: 0; }
+        .leader-info h4 { margin: 0 0 5px 0; color: var(--text-main); font-size: 1.05rem; }
+        .leader-info .role-title { color: var(--primary); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px; }
+        .leader-phone {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .leader-phone .info-link { flex: 1; min-width: 0; font-weight: 700; color: var(--text-main); text-decoration: none; font-size: 0.95rem; }
+        .leader-phone .info-link:hover { color: var(--primary); }
+        .leader-phone .icon { color: var(--text-muted); }
+
+        .btn-copy-lg {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .btn-copy-lg:hover { background: var(--primary); color: #fff; }
+        .btn-copy-lg.copied { background: var(--success); color: #fff; }
+
+        /* Small roster avatars (district members, member picker) */
+        .avatar-circle {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-circle.small { width: 32px; height: 32px; border-radius: 9px; font-size: 0.8rem; }
+
+        .mini-avatar-grid { display: flex; flex-wrap: wrap; gap: 14px; }
+        .mini-avatar { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 84px; text-align: center; }
+        .mini-avatar span {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            line-height: 1.25;
+            width: 100%;
+            overflow-wrap: anywhere;
+        }
+
+        /* Specificity note: beats the generic ".modal-content label" rule,
+           which would otherwise force display:block on these rows. */
+        .modal-content .member-check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 4px;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: none;
+        }
+        .member-check-row:last-child { border-bottom: none; }
+        .member-check-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--primary); }
+
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+        #missionaryList.grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        /* Companionship Blocks */
+        .comp-block {
+            background: var(--bg-card);
+            padding: 18px;
+            border-radius: 14px;
+            text-align: center;
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--accent);
+            margin-bottom: 12px;
+        }
+        .comp-block-legacy-names { font-size: 1.1rem; font-weight: 800; }
+
+        /* Missionary Cards -- collapsed = square photo + name; click to expand details */
+        .missionary-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .missionary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(31, 61, 122, 0.16); }
+
+        .missionary-photo-tile {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
+            overflow: hidden;
+        }
+        .missionary-photo-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .missionary-photo-tile .initial-fallback {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .missionary-summary-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 10px 12px;
+        }
+        .missionary-name {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .missionary-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+
+        /* Full-screen missionary profile popup */
+        .modal.profile-popup { padding: 0; align-items: stretch; }
+        .profile-popup-sheet {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            height: 100%;
+            overflow-y: auto;
+            position: relative;
+        }
+        @media (min-width: 640px) {
+            .modal.profile-popup { padding: 20px; align-items: center; }
+            .profile-popup-sheet { height: auto; max-height: 90vh; border-radius: 24px; box-shadow: 0 20px 60px rgba(20, 40, 90, 0.35); }
+        }
+        .profile-popup-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: rgba(10, 20, 40, 0.45);
+            color: #fff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+        }
+        .profile-popup-photo {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 42vh;
+            background: linear-gradient(160deg, #eaf1ff, #cddcff);
+            overflow: hidden;
+        }
+        .profile-popup-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .profile-popup-photo .initial-fallback {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .profile-popup-body { padding: 22px; }
+        .profile-popup-body h2 { font-size: 1.5rem; margin: 0; display: inline; }
+        .profile-popup-subtitle { color: var(--text-muted); font-size: 0.95rem; margin: 8px 0 0; line-height: 1.5; }
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 3px 9px 3px 7px;
+            border-radius: 20px;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+        .profile-popup-cookie { text-align: center; position: relative; margin: 16px 0; }
+
+        /* Fun Cookies */
+        .cookie-banner {
+            background: var(--accent-soft);
+            color: var(--accent-text);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 8px auto;
+            font-weight: 800;
+            display: inline-block;
+            border: 1px solid var(--accent);
+        }
+        .cookies-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 12px 0;
+            background: var(--secondary);
+            padding: 10px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+        }
+        .cookie-score {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--cookie-brown);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .add-cookie {
+            background: linear-gradient(45deg, #e6a86c, #c88d52);
+            border: none;
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(200, 141, 82, 0.5);
+            transition: transform 0.1s;
+        }
+        .add-cookie:active { transform: scale(0.8); }
+
+        @keyframes toss {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-36px) scale(1.6) rotate(180deg); opacity: 1; }
+            100% { transform: translateY(-6px) scale(1) rotate(360deg); opacity: 0; }
+        }
+        .coin-anim {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+            animation: toss 0.65s ease-out forwards;
+            z-index: 50;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 800;
+            font-family: inherit;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.95rem;
+        }
+        .btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-accent { background: linear-gradient(135deg, var(--accent), #ffcf4d); color: var(--accent-text); }
+        .btn-accent:hover { filter: brightness(0.96); }
+        .btn-outline { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--secondary); }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), #ff6b78); color: #fff; }
+        .btn-danger:hover { filter: brightness(0.95); }
+        .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+        .btn-block { width: 100%; }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(16, 30, 60, 0.55);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            padding: 28px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid var(--border);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(20, 40, 90, 0.3);
+        }
+        .modal-content label {
+            display: block;
+            margin-top: 15px;
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .modal-content input[type="text"], .modal-content input[type="password"],
+        .modal-content input[type="email"], .modal-content input[type="date"], .modal-content select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--secondary);
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .modal-content input[type="color"] {
+            width: 100%;
+            height: 45px;
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--secondary);
+            cursor: pointer;
+            padding: 2px;
+        }
+        .modal-content input:focus, .modal-content select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .field-hint { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+        .error-text { color: var(--danger); font-size: 0.9rem; margin-top: 10px; min-height: 1.2em; font-weight: 700; }
+
+        .admin-controls { display: none; margin-top: 15px; }
+        .admin-mode .admin-controls { display: block; }
+        .admin-mode .admin-controls-inline { display: inline-block; }
+        .admin-controls-inline { display: none; }
+
+        /* Search input styling */
+        #missionarySearch, #companionshipSearch {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 1rem;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 8px;
+            z-index: 5;
+        }
+        #missionarySearch:focus, #companionshipSearch:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Gatherings carousel -- swipeable, edge-bleeding out to the screen
+           edges (matches main's own side padding via negative margin so
+           the next card peeks in from the right). */
+        .gatherings-carousel-section { margin-bottom: 28px; }
+        .gatherings-carousel-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 12px; }
+        .gatherings-carousel {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding: 2px 1.25rem 8px;
+            margin: 0 -1.25rem;
+            scrollbar-width: none;
+        }
+        .gatherings-carousel::-webkit-scrollbar { display: none; }
+        .gathering-card {
+            scroll-snap-align: start;
+            flex: 0 0 85%;
+            max-width: 380px;
+            background: linear-gradient(160deg, var(--primary), #4d8bff);
+            color: #fff;
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 12px 28px rgba(47, 111, 237, 0.35);
+        }
+        .gathering-card h3 { color: #fff; font-size: 1.3rem; margin: 10px 0 2px; }
+        .gathering-card-date { margin: 0 0 12px; font-weight: 700; opacity: 0.9; }
+        .gathering-card-desc { margin: 0 0 14px; opacity: 0.9; line-height: 1.5; }
+        .gathering-card .badge-pill { background: rgba(255,255,255,0.22); color: #fff; border-color: rgba(255,255,255,0.3); }
+        .gathering-card .info-row { background: rgba(255,255,255,0.15); }
+        .gathering-card .info-link, .gathering-card .info-text { color: #fff; }
+        .gathering-card .info-row .icon { color: rgba(255,255,255,0.85); }
+        .gathering-card .copy-btn { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.3); }
+        .gathering-card .copy-btn:hover { background: #fff; color: var(--primary); }
+        .gathering-card .copy-btn.copied { background: var(--success); color: #fff; border-color: var(--success); }
+        .gathering-rsvp-box { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 12px; margin-top: 14px; }
+        .gathering-card .rsvp-badge { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.28); }
+        .gathering-card .rsvp-remove { color: #ffd3d8; }
+        .gathering-card .btn-outline { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.32); }
+        .gathering-card .btn-outline:hover { background: #fff; color: var(--primary); }
+
+        .gatherings-carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
+        .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.2s; }
+        .carousel-dot.active { background: var(--primary); width: 18px; border-radius: 4px; }
+
+        /* Calendar month view -- deliberately not inside a .card so the
+           grid gets the full tab width instead of losing it to card padding. */
+        .calendar-panel { margin-bottom: 20px; }
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .calendar-nav h3 { margin: 0; font-size: 1.1rem; color: var(--text-main); }
+        .calendar-nav-arrow {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .calendar-nav-arrow:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+        .calendar-weekdays span {
+            text-align: center;
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+        }
+        .calendar-day {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-height: 78px;
+            min-width: 0;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .calendar-day.other-month { background: transparent; border-color: transparent; opacity: 0.4; }
+        .calendar-day.today { border: 2px solid var(--primary); background: var(--primary-light); padding: 2px; }
+        .calendar-day-num { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); padding: 2px 2px 0; }
+        .calendar-day.today .calendar-day-num { color: var(--primary); }
+        .calendar-day-events { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .event-chip {
+            background: var(--bg-card);
+            color: var(--primary);
+            border: none;
+            border-radius: 5px;
+            padding: 3px 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+            min-width: 0;
+            display: block;
+        }
+        .event-chip:hover { background: var(--primary); color: #fff; }
+        .event-chip.event-chip-gathering { background: var(--accent-soft); color: var(--accent-text); }
+        .event-chip.event-chip-gathering:hover { background: var(--accent); }
+        .event-chip.event-chip-urgent { background: var(--danger); color: #fff; }
+        .event-chip.event-chip-urgent:hover { background: #e6394a; }
+
+        /* Resource Link Styling */
+        .resource-link {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--primary), #4d8bff);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 800;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+        .resource-link:hover { filter: brightness(0.95); }
+
+        /* Contact / address / link rows with copy buttons */
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--secondary);
+            border-radius: 10px;
+            padding: 9px 10px;
+            margin-bottom: 8px;
+        }
+        .info-row .icon { color: var(--text-muted); }
+        .info-link {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 0;
+        }
+        .info-link.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .info-link:hover { color: var(--primary); }
+        .info-text {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 0;
+        }
+        .copy-btn {
+            background: var(--bg-card);
+            color: var(--primary);
+            border: 1px solid var(--border);
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .copy-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .copy-btn.copied { background: var(--success); color: #fff; border-color: var(--success); }
+
+        /* RSVP Styling */
+        .rsvp-badge {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--text-main);
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin: 3px 4px 3px 0;
+            font-size: 0.85em;
+            border: 1px solid var(--border);
+        }
+        .rsvp-remove {
+            cursor: pointer;
+            color: var(--danger);
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        /* Avatar upload in profile modal */
+        .avatar-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .avatar-preview {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px dashed var(--primary);
+            background: linear-gradient(160deg, #eaf1ff, #d3e2ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            overflow: hidden;
+        }
+        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-upload-hint { color: var(--primary); font-weight: 800; font-size: 0.85rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="login-mark">Z</div>
+        <h2 style="color: var(--primary); margin-bottom: 4px;">Zone Hub</h2>
+        <p style="color: var(--text-muted); margin-bottom: 22px;">Enter the site password to continue.</p>
+        <input type="password" id="sitePassword" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px; margin-bottom:15px; border-radius:10px; border:1px solid var(--border); background:var(--secondary); color:var(--text-main); box-sizing:border-box; font-family:inherit; font-size:1rem;" onkeypress="if(event.key === 'Enter') doSignIn()">
+        <button class="btn btn-block" onclick="doSignIn()">Enter Site</button>
+        <p id="signInError" class="error-text"></p>
+    </div>
+</div>
+
+<!-- Main App Content (Hidden until signed in) -->
+<div id="appContent">
+    <header>
+        <div class="brand">
+            <span class="brand-mark">Z</span>
+            <h1>Zone Hub</h1>
+        </div>
+        <div class="header-controls">
+            <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
+            <button class="admin-btn" onclick="signOut()">Sign Out</button>
+        </div>
+    </header>
+
+    <nav class="top-nav">
+        <button class="tab-btn active" data-tab="general" onclick="switchTab('general')">General</button>
+        <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">Calendar</button>
+        <button class="tab-btn" data-tab="service" onclick="switchTab('service')">Service</button>
+        <button class="tab-btn" data-tab="resources" onclick="switchTab('resources')">Resources</button>
+        <button class="tab-btn" data-tab="districts" onclick="switchTab('districts')">Districts</button>
+        <button class="tab-btn" data-tab="companionships" onclick="switchTab('companionships')">Companionships</button>
+        <button class="tab-btn" data-tab="missionaries" onclick="switchTab('missionaries')">Missionaries</button>
+    </nav>
+
+    <main>
+        <!-- General Info Tab -->
+        <div id="general" class="tab-content active">
+            <!-- Gatherings carousel -- deliberately above everything else,
+                 including the heading, since these are time-sensitive. -->
+            <div id="gatheringsCarouselWrap"></div>
+
+            <h2>General Information</h2>
+
+            <!-- Dynamic General Notes Container -- announcements live front and center,
+                 above the routine recurring sections below. -->
+            <div id="generalNotesContainer"></div>
+
+            <div class="admin-controls" style="margin: 0 0 25px 0;">
+                <button class="btn btn-accent" onclick="addGeneralNote()">+ Add New Note Section</button>
+            </div>
+
+            <details class="card section-card" id="section-meetings">
+                <summary>
+                    <span class="summary-title">Regular Meetings</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="meetings" onclick="toggleSectionDefault(event, 'meetings')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
+                </summary>
+                <div class="section-body">
+                    <div class="admin-controls" style="margin-bottom: 14px;">
+                        <button class="btn" onclick="addMeeting()">+ Add Meeting</button>
+                    </div>
+                    <div id="meetingsList"></div>
+                </div>
+            </details>
+
+            <details class="card section-card" id="section-events">
+                <summary>
+                    <span class="summary-title">Upcoming Events</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="events" onclick="toggleSectionDefault(event, 'events')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
+                </summary>
+                <div class="section-body">
+                    <div id="upcomingEventsList"></div>
+                    <button class="btn btn-outline btn-block" onclick="switchTab('calendar')" style="margin-top:12px;">View Full Calendar</button>
+                </div>
+            </details>
+
+            <details class="card section-card" id="section-birthdays">
+                <summary>
+                    <span class="summary-title">Upcoming Birthdays</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="birthdays" onclick="toggleSectionDefault(event, 'birthdays')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
+                </summary>
+                <div class="section-body">
+                    <div id="upcomingBirthdaysList"></div>
+                </div>
+            </details>
+
+            <details class="card section-card" id="section-leadership">
+                <summary>
+                    <span class="summary-title">Leadership &amp; Advisors</span>
+                    <span class="summary-controls">
+                        <button class="admin-controls-inline section-default-btn" data-section="leadership" onclick="toggleSectionDefault(event, 'leadership')">Starts Closed</button>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </span>
+                </summary>
+                <div class="section-body">
+                    <div class="admin-controls" style="margin-bottom: 20px;">
+                        <button class="btn" onclick="openLeaderModal()">+ Add Leader/Advisor</button>
+                    </div>
+                    <div id="leadersList"></div>
+                </div>
+            </details>
+        </div>
+
+        <!-- Calendar Tab -->
+        <div id="calendar" class="tab-content">
+            <h2>Zone Calendar</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn" onclick="openCalendarEventModal()">+ Add Event</button>
+            </div>
+
+            <div class="calendar-panel">
+                <div class="calendar-nav">
+                    <button class="calendar-nav-arrow" onclick="changeCalendarMonth(-1)" aria-label="Previous month">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                    </button>
+                    <div style="text-align:center;">
+                        <h3 id="calendarMonthLabel" style="margin-bottom:0;"></h3>
+                        <button class="btn btn-outline btn-sm" onclick="goToCurrentMonth()" style="margin-top:6px;">Today</button>
+                    </div>
+                    <button class="calendar-nav-arrow" onclick="changeCalendarMonth(1)" aria-label="Next month">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                    </button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+
+            <div id="calendarUnscheduled"></div>
+        </div>
+
+        <!-- Service Opportunities Tab -->
+        <div id="service" class="tab-content">
+            <h2>Service Opportunities</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Approved Sites</h3>
+                    <div class="admin-controls" style="margin-bottom: 15px;">
+                        <button class="btn btn-accent" onclick="addSite()">+ Add Site</button>
+                    </div>
+                    <div id="sitesList"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Gatherings &amp; Ideas</h3>
+                    <div style="margin-bottom: 15px;">
+                        <button class="btn btn-accent" onclick="openGatheringModal()">+ Add Gathering / Idea</button>
+                    </div>
+                    <div id="gatheringsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Tab -->
+        <div id="resources" class="tab-content">
+            <h2>Zone Documents &amp; Resources</h2>
+            <p style="color: var(--text-muted); margin-bottom: 22px;">Tap to view or download important zone documents.</p>
+            <div class="admin-controls" style="margin-bottom: 20px;">
+                <button class="btn btn-accent" onclick="addResource()">+ Add Document Link</button>
+            </div>
+            <div id="resourcesList" class="grid"></div>
+        </div>
+
+        <!-- Districts Tab -->
+        <div id="districts" class="tab-content">
+            <h2>Districts</h2>
+            <div class="admin-controls" style="margin-bottom: 20px;">
+                <button class="btn" onclick="addDistrict()">+ Add District</button>
+            </div>
+            <div id="districtsList" class="grid"></div>
+        </div>
+
+        <!-- Companionships Tab -->
+        <div id="companionships" class="tab-content">
+            <h2>Companionships</h2>
+            <div class="admin-controls" style="margin-bottom: 20px;">
+                <button class="btn" onclick="openCompanionshipModal()">+ Add Companionship</button>
+            </div>
+
+            <input type="text" id="companionshipSearch" placeholder="Search companionships..." onkeyup="filterCompanionships()">
+
+            <div id="companionshipsList" class="grid"></div>
+        </div>
+
+        <!-- Missionaries Tab -->
+        <div id="missionaries" class="tab-content">
+            <h2>Missionary Profiles</h2>
+            <button class="btn btn-accent" onclick="openProfileModal()" style="margin-bottom: 20px;">+ Add New Missionary</button>
+
+            <details class="card section-card" open>
+                <summary>
+                    <span class="summary-title">Starting Soon</span>
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="section-body">
+                    <div id="startingSoonMissionariesList"></div>
+                </div>
+            </details>
+
+            <input type="text" id="missionarySearch" placeholder="Search missionaries by name..." onkeyup="filterMissionaries()">
+
+            <div id="missionaryList" class="grid"></div>
+        </div>
+    </main>
+
+    <!-- Bottom tab bar (mobile) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <button class="tab-btn active" data-tab="general" onclick="switchTab('general')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
+                General
+            </button>
+            <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16"/><path d="M8 3.5v4"/><path d="M16 3.5v4"/></svg>
+                Calendar
+            </button>
+            <button class="tab-btn" data-tab="service" onclick="switchTab('service')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="11" rx="2"/><path d="M8.5 8.5V7a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5"/><path d="M3.5 13.5h17"/></svg>
+                Service
+            </button>
+            <button class="tab-btn" data-tab="resources" onclick="switchTab('resources')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6c2.2-1.3 5.3-1.3 8 0 2.7-1.3 5.8-1.3 8 0v12.5c-2.2-1.3-5.3-1.3-8 0-2.7-1.3-5.8-1.3-8 0z"/><path d="M12 6v12.5"/></svg>
+                Docs
+            </button>
+            <button class="tab-btn" data-tab="districts" onclick="switchTab('districts')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg>
+                Districts
+            </button>
+            <button class="tab-btn" data-tab="companionships" onclick="switchTab('companionships')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="3"/><circle cx="16" cy="9.5" r="2.4"/><path d="M3.5 20c0-3.4 2.3-6 5-6s5 2.6 5 6"/><path d="M13.2 14.3c1.9.3 3.3 2.6 3.3 5.7"/></svg>
+                Comps
+            </button>
+            <button class="tab-btn" data-tab="missionaries" onclick="switchTab('missionaries')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16.5c0-1.9 1.3-3 3-3s3 1.1 3 3"/><path d="M13.5 9.5h5"/><path d="M13.5 13h5"/></svg>
+                People
+            </button>
+        </div>
+    </nav>
+
+    <!-- Leader Modal -->
+    <div id="leaderModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-main); margin-top:0;">Add Leader/Advisor</h2>
+
+            <label>Missionary</label>
+            <select id="ldrMissionary"></select>
+            <p class="field-hint">Their name, photo and phone number come from their Missionary profile.</p>
+
+            <label>Role / Title</label>
+            <input type="text" id="ldrRole" placeholder="e.g. Zone Leader, Service Advisor">
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveLeader()">Save Leader</button>
+                <button class="btn btn-outline" onclick="closeLeaderModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Missionary Profile Popup (full-screen -- tap a photo tile on the Missionaries tab) -->
+    <div id="missionaryProfileModal" class="modal profile-popup">
+        <div class="profile-popup-sheet">
+            <button class="profile-popup-close" onclick="closeMissionaryProfile()" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <div class="profile-popup-photo" id="profilePopupPhoto"></div>
+            <div class="profile-popup-body">
+                <h2 id="profilePopupName"></h2>
+                <p class="profile-popup-subtitle" id="profilePopupSubtitle"></p>
+                <div id="profilePopupBadges" class="missionary-badges" style="margin-top:10px;"></div>
+
+                <div class="profile-popup-cookie" id="profilePopupCookieAnchor">
+                    <div class="cookie-banner" id="profilePopupCookieBanner"></div>
+                    <div class="cookies-container">
+                        <span class="cookie-score">🍪 <span id="profilePopupCookieScore"></span></span>
+                        <button class="add-cookie" onclick="addCookie(event)">+</button>
+                    </div>
+                </div>
+
+                <div id="profilePopupPhone"></div>
+                <div id="profilePopupInfo"></div>
+
+                <button class="btn btn-block" style="margin-top: 16px;" onclick="editFromMissionaryProfile()">Edit Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Modal (view an event -- shown when a calendar chip is tapped) -->
+    <div id="eventDetailsModal" class="modal">
+        <div class="modal-content">
+            <input type="hidden" id="eventDetailsId">
+            <h2 id="eventDetailsTitle" style="color: var(--text-main); margin-top:0;"></h2>
+            <p id="eventDetailsDate" style="color: var(--primary); font-weight: 800; margin-top: -8px;"></p>
+            <p id="eventDetailsDesc" style="color: var(--text-muted);"></p>
+            <div id="eventDetailsAddress"></div>
+            <div id="eventDetailsLink"></div>
+
+            <div style="margin-top: 15px; background: var(--secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <strong id="eventDetailsRsvpCount" style="color: var(--text-main); font-size: 0.95rem;"></strong>
+                    <button class="btn btn-outline btn-sm" onclick="addRsvp(document.getElementById('eventDetailsId').value)">+ RSVP</button>
+                </div>
+                <div id="eventDetailsRsvpList" style="color: var(--text-muted);"></div>
+            </div>
+
+            <div class="admin-controls" style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-outline" style="flex:1;" onclick="editEventFromDetails()">Edit</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="deleteEventFromDetails()">Delete</button>
+            </div>
+            <button class="btn btn-outline btn-block" style="margin-top: 10px;" onclick="closeEventDetailsModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Calendar Event Modal -->
+    <div id="calendarEventModal" class="modal">
+        <div class="modal-content">
+            <h2 id="calendarEventModalTitle" style="color: var(--text-main); margin-top:0;">Add Event</h2>
+            <input type="hidden" id="cevId">
+
+            <label>Title</label>
+            <input type="text" id="cevTitle" placeholder="e.g. Zone Conference">
+
+            <label>Type</label>
+            <select id="cevType">
+                <option value="meeting">Meeting</option>
+                <option value="gathering">Gathering</option>
+            </select>
+            <p class="field-hint">Gatherings also show in their own "Upcoming Gatherings" section on the General tab.</p>
+
+            <label>Date</label>
+            <input type="date" id="cevDate">
+            <p class="field-hint">Leave blank only if there's truly no fixed date -- it'll show under "Other Events" below the calendar instead of on the grid.</p>
+
+            <div class="checkbox-row">
+                <input type="checkbox" id="cevRepeats">
+                <label for="cevRepeats">Repeats weekly (same day &amp; time)</label>
+            </div>
+
+            <label>Time / Label</label>
+            <input type="text" id="cevTimeLabel" placeholder="e.g. 11:00am-3:00pm, or 'Every Friday'">
+
+            <label>Description</label>
+            <input type="text" id="cevDesc" placeholder="Details...">
+
+            <label>Address</label>
+            <input type="text" id="cevAddress" placeholder="Optional">
+
+            <label>Link</label>
+            <input type="text" id="cevLink" placeholder="Optional, e.g. a Zoom or signup link">
+
+            <label>Color</label>
+            <input type="text" id="cevColor" placeholder="Type 'red' for Mandatory/Urgent, or leave blank">
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveCalendarEvent()">Save Event</button>
+                <button class="btn btn-outline" onclick="closeCalendarEventModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- District Leaders Modal -->
+    <div id="districtLeadersModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-main); margin-top:0;">Set District Leaders</h2>
+            <input type="hidden" id="distLeadersId">
+
+            <label>Leader 1</label>
+            <select id="distLeader1"></select>
+
+            <label>Leader 2</label>
+            <select id="distLeader2"></select>
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveDistrictLeaders()">Save Leaders</button>
+                <button class="btn btn-outline" onclick="closeDistrictLeadersModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- District Members Modal -->
+    <div id="districtMembersModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-main); margin-top:0;">Manage Members</h2>
+            <input type="hidden" id="distMembersId">
+            <p class="field-hint" style="margin-top:0;">Checking someone here moves them out of any other district.</p>
+            <div id="distMembersChecklist" style="max-height: 340px; overflow-y: auto; margin-top: 12px;"></div>
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveDistrictMembers()">Save Members</button>
+                <button class="btn btn-outline" onclick="closeDistrictMembersModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Companionship Members Modal -->
+    <div id="companionshipModal" class="modal">
+        <div class="modal-content">
+            <h2 id="companionshipModalTitle" style="color: var(--text-main); margin-top:0;">Add Companionship</h2>
+            <input type="hidden" id="compId">
+            <p class="field-hint" style="margin-top:0;">Check who's in this companionship (2 or more missionaries).</p>
+            <div id="companionshipChecklist" style="max-height: 340px; overflow-y: auto; margin-top: 12px;"></div>
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveCompanionship()">Save Companionship</button>
+                <button class="btn btn-outline" onclick="closeCompanionshipModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gathering Modal -->
+    <div id="gatheringModal" class="modal">
+        <div class="modal-content">
+            <h2 id="gatheringModalTitle" style="color: var(--text-main); margin-top:0;">Edit Gathering / Idea</h2>
+            <input type="hidden" id="gathId">
+
+            <label>Title</label>
+            <input type="text" id="gathTitle" placeholder="e.g. Zone Temple Trip">
+
+            <label>Date or Timeline</label>
+            <input type="text" id="gathDate" placeholder="e.g. Aug 20, or 'Every Friday'">
+
+            <label>Description & Details</label>
+            <input type="text" id="gathDesc" placeholder="e.g. Carpooling from the stake center...">
+
+            <label>Emoji</label>
+            <input type="text" id="gathEmoji" placeholder="Optional emoji" maxlength="5">
+
+            <label>Theme Color</label>
+            <input type="color" id="gathColor" value="#2f6fed">
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="saveGathering()">Save Gathering</button>
+                <button class="btn btn-outline" onclick="closeGatheringModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="color: var(--text-main); margin-top:0;">Edit Profile</h2>
+            <input type="hidden" id="profId">
+
+            <div class="avatar-upload" onclick="document.getElementById('profPhotoFile').click()">
+                <div id="profAvatarPreview" class="avatar-preview">?</div>
+                <div class="avatar-upload-hint">Tap to change photo</div>
+            </div>
+            <input type="file" id="profPhotoFile" accept="image/*" style="display:none" onchange="previewSelectedPhoto(this)">
+
+            <label>Name</label>
+            <input type="text" id="profName" placeholder="e.g. Elder Smith">
+
+            <label>Profile Emoji (shown if no photo)</label>
+            <input type="text" id="profEmoji" placeholder="Optional, e.g. initials work too" maxlength="5">
+
+            <label>Theme Color</label>
+            <input type="color" id="profColor" value="#2f6fed">
+
+            <div id="roleSelectorDiv" style="display: none;">
+                <label>Zone Service Assignment (Admin Only)</label>
+                <select id="profRole">
+                    <option value="">None</option>
+                    <option value="DL">District Leader</option>
+                    <option value="STL">Sister Training Leader</option>
+                    <option value="ZL">Zone Leader</option>
+                </select>
+            </div>
+
+            <label>Phone Number</label>
+            <input type="text" id="profPhone" placeholder="e.g. 555-0199">
+
+            <label>Service Sites</label>
+            <input type="text" id="profSites" placeholder="Where do you serve?">
+
+            <label>Birthday</label>
+            <input type="text" id="profBirthday" placeholder="e.g. October 24">
+
+            <label>Start Date</label>
+            <input type="date" id="profStartDate">
+            <p class="field-hint">If this is in the future, they'll show up in "Starting Soon" until then.</p>
+
+            <label>Companion</label>
+            <input type="text" id="profCompanion" placeholder="Current Companion">
+
+            <label>District</label>
+            <input type="text" id="profDistrict" placeholder="Which District?">
+
+            <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" id="profSaveBtn" onclick="saveProfile()">Save Profile</button>
+                <button class="btn btn-outline" id="profCancelBtn" onclick="closeProfileModal()">Cancel</button>
+                <button class="btn btn-danger admin-controls" id="profDeleteBtn" onclick="deleteProfile()">Delete Missionary</button>
+            </div>
+            <p id="profileError" class="error-text"></p>
+        </div>
+    </div>
+</div> <!-- End of App Content -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+    // --- SUPABASE CONFIGURATION ---
+    // The anon key is safe to ship client-side -- every table it can touch is
+    // locked down by Row Level Security policies on the database side.
+    const SUPABASE_URL = "https://nxdsmnrhmelxitbuzugi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54ZHNtbnJobWVseGl0YnV6dWdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2MzkyNDAsImV4cCI6MjExMTIxNTI0MH0.rt7Hyxd9dnVJ2LXa8FzmXYnQwNDdGbAGSIeI4h8TDJA";
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    // Two shared logins back the site/admin passwords -- everyone who knows
+    // the site password signs in as the same account, and "Admin" re-signs-in
+    // as a second shared account whose missionaries row has app_role='admin'.
+    // Real RLS on the server (not this constant) is what actually enforces
+    // who can do what -- these are just which account a password maps to.
+    const SITE_LOGIN_EMAIL = "missionary@zonehub.pgmissionaries.internal";
+    const ADMIN_LOGIN_EMAIL = "admin@zonehub.pgmissionaries.internal";
+
+    // App State -- populated from Supabase, never trusted for authorization
+    // (RLS on the server is what actually enforces who can do what).
+    let state = {
+        userId: null,
+        me: null,
+        isAdmin: false,
+        missionaries: [],
+        leadership: [],
+        calendarEvents: [],
+        serviceSites: [],
+        gatherings: [],
+        resources: [],
+        districts: [],
+        companionships: [],
+        generalNotes: [],
+        meetings: [],
+        sectionSettings: {}
+    };
+
+    function esc(str) {
+        return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[c]));
+    }
+
+    // --- Minimal inline icon set (kept small & monochrome on purpose) ---
+
+    const ICON_PATHS = {
+        chevron: '<path d="M6 9l6 6 6-6"/>',
+        check: '<path d="M5 13l4 4L19 7"/>',
+        copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M4.5 15.5v-9a2 2 0 0 1 2-2h9"/>',
+        phone: '<path d="M6 4.5h2.6l1.4 3.8-1.8 1.7c.9 2.5 2.7 4.3 5.2 5.2l1.7-1.8 3.8 1.4V18a1.5 1.5 0 0 1-1.6 1.5C10.8 18.9 5.1 13.2 4.5 7.1 4.4 6.2 5.1 5.4 6 4.5z"/>',
+        pin: '<path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>',
+        link: '<path d="M9.5 14.5l5-5"/><path d="M13 6.5h3a4 4 0 0 1 0 8h-2"/><path d="M11 17.5H8a4 4 0 0 1 0-8h2"/>',
+        clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'
+    };
+    function icon(name, size = 18) {
+        return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name] || ""}</svg>`;
+    }
+    function chevronIcon(size = 18) {
+        return `<svg class="chevron" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS.chevron}</svg>`;
+    }
+
+    // --- Copy-to-clipboard + contact row helpers ---
+
+    async function copyToClipboard(btn) {
+        const text = btn.dataset.copy;
+        if (!text) return;
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (e) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.focus(); ta.select();
+            try { document.execCommand("copy"); } catch (e2) { /* no-op */ }
+            ta.remove();
+        }
+        const original = btn.innerHTML;
+        btn.innerHTML = btn.classList.contains("btn-copy-lg")
+            ? `${icon("check", 16)}<span>Copied</span>`
+            : icon("check", 15);
+        btn.classList.add("copied");
+        clearTimeout(btn._copyTimeout);
+        btn._copyTimeout = setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove("copied");
+        }, 1200);
+    }
+
+    function phoneRow(phone) {
+        if (!phone) return "";
+        const digits = phone.replace(/[^0-9+]/g, "");
+        return `
+            <div class="info-row">
+                ${icon("phone", 16)}
+                <a class="info-link" href="tel:${esc(digits)}">${esc(phone)}</a>
+                <button class="copy-btn" data-copy="${esc(phone)}" onclick="copyToClipboard(this)" title="Copy phone number">${icon("copy", 15)}</button>
+            </div>`;
+    }
+
+    function addressRow(address) {
+        if (!address) return "";
+        return `
+            <div class="info-row">
+                ${icon("pin", 16)}
+                <a class="info-link" href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" rel="noopener noreferrer">${esc(address)}</a>
+                <button class="copy-btn" data-copy="${esc(address)}" onclick="copyToClipboard(this)" title="Copy address">${icon("copy", 15)}</button>
+            </div>`;
+    }
+
+    function linkRow(url) {
+        if (!url) return "";
+        const display = url.replace(/^https?:\/\//, "");
+        return `
+            <div class="info-row">
+                ${icon("link", 16)}
+                <a class="info-link truncate" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(display)}</a>
+                <button class="copy-btn" data-copy="${esc(url)}" onclick="copyToClipboard(this)" title="Copy link">${icon("copy", 15)}</button>
+            </div>`;
+    }
+
+    function copyableRow(value) {
+        if (!value) return "";
+        return `
+            <div class="info-row">
+                <span class="info-text">${esc(value)}</span>
+                <button class="copy-btn" data-copy="${esc(value)}" onclick="copyToClipboard(this)" title="Copy">${icon("copy", 15)}</button>
+            </div>`;
+    }
+
+    // Shared "leader" card: photo/emoji/initial avatar, name, role label, and
+    // a big labeled Copy button on the phone number. Used by the General tab's
+    // Leadership section and by district leader slots.
+    function leaderCardHtml(person, roleTitle) {
+        if (!person) return "";
+        const name = person.name || "Unknown";
+        const avatar = person.photo_url
+            ? `<img src="${esc(person.photo_url)}" alt="${esc(name)}">`
+            : esc(person.emoji || name.trim().charAt(0).toUpperCase());
+        const phoneHtml = person.phone ? `
+            <div class="leader-phone">
+                ${icon("phone", 16)}
+                <a class="info-link" href="tel:${esc(person.phone.replace(/[^0-9+]/g, ""))}">${esc(person.phone)}</a>
+                <button class="btn-copy-lg" data-copy="${esc(person.phone)}" onclick="copyToClipboard(this)">${icon("copy", 16)}<span>Copy</span></button>
+            </div>` : "";
+        return `
+            <div class="leader-card">
+                <div class="leader-emoji">${avatar}</div>
+                <div class="leader-info">
+                    <div class="role-title">${esc(roleTitle || "")}</div>
+                    <h4>${esc(name)}</h4>
+                    ${phoneHtml}
+                </div>
+            </div>`;
+    }
+
+    function emptyLeaderSlot() {
+        return `<div class="leader-card" style="justify-content:center; color:var(--text-muted); font-weight:700; font-size:0.9rem;">No leader assigned</div>`;
+    }
+
+    function avatarCircleHtml(m, sizeClass) {
+        const avatar = m.photo_url
+            ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+            : esc(m.emoji || (m.name || "?").trim().charAt(0).toUpperCase());
+        return `<div class="avatar-circle${sizeClass ? " " + sizeClass : ""}">${avatar}</div>`;
+    }
+
+    function memberTilesHtml(members) {
+        if (members.length === 0) return `<p class="empty-hint">No members assigned yet.</p>`;
+        return `<div class="mini-avatar-grid">${members.map((m) => `
+            <div class="mini-avatar">
+                ${avatarCircleHtml(m)}
+                <span>${esc(m.name)}</span>
+            </div>`).join("")}</div>`;
+    }
+
+    // Best-effort birthday math against free-text birthday fields like "October 24".
+    const MONTH_NAMES = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+    function daysUntilBirthday(birthdayText) {
+        if (!birthdayText) return null;
+        const text = String(birthdayText).toLowerCase();
+        const monthIdx = MONTH_NAMES.findIndex((m) => text.includes(m) || text.includes(m.slice(0, 3)));
+        if (monthIdx === -1) return null;
+        const dayMatch = text.match(/\b(\d{1,2})\b/);
+        if (!dayMatch) return null;
+        const day = parseInt(dayMatch[1], 10);
+        if (day < 1 || day > 31) return null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let next = new Date(today.getFullYear(), monthIdx, day);
+        if (next < today) next = new Date(today.getFullYear() + 1, monthIdx, day);
+        return Math.round((next - today) / 86400000);
+    }
+
+    // Missionaries with a future (or today) start_date, soonest first.
+    // Shared by the General tab and Missionaries tab "Starting Soon" sections.
+    function startingSoonList() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return state.missionaries
+            .filter((m) => m.start_date)
+            .map((m) => {
+                const start = new Date(`${m.start_date}T00:00:00`);
+                return { m, start, days: Math.round((start - today) / 86400000) };
+            })
+            .filter((x) => !isNaN(x.days) && x.days >= 0)
+            .sort((a, b) => a.days - b.days);
+    }
+
+    function renderStartingSoonInto(elId) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const upcoming = startingSoonList();
+        if (upcoming.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No new missionaries starting soon.</p>`;
+            return;
+        }
+        el.innerHTML = upcoming.map(({ m, days, start }) => {
+            const avatar = m.photo_url
+                ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+                : esc(m.emoji || (m.name || "?").trim().charAt(0).toUpperCase());
+            const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+            const dateLabel = start.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+            return `
+                <div class="birthday-row">
+                    <div class="birthday-avatar">${avatar}</div>
+                    <div class="birthday-info">
+                        <strong>${esc(m.name)}</strong>
+                        <span class="text-muted">${esc(dateLabel)}</span>
+                    </div>
+                    <span class="badge-pill${days === 0 ? " badge-today" : ""}">${when}</span>
+                </div>`;
+        }).join("");
+    }
+
+    // --- Auth ---
+
+    async function doSignIn() {
+        const password = document.getElementById("sitePassword").value;
+        const errEl = document.getElementById("signInError");
+        errEl.textContent = "";
+        const { error } = await db.auth.signInWithPassword({ email: SITE_LOGIN_EMAIL, password });
+        if (error) errEl.textContent = "Incorrect password.";
+    }
+
+    // Admin toggle: "Admin" re-authenticates as the shared admin account
+    // (a real, separate session -- not a client-side flag -- since RLS keys
+    // off who's actually signed in). "Lock" signs all the way out, since
+    // there's no client-stored site password to silently sign back in with.
+    async function toggleAdmin() {
+        if (state.isAdmin) {
+            await signOut();
+            return;
+        }
+        const password = prompt("Enter the Zone Admin Password:");
+        if (password === null) return;
+        const { error } = await db.auth.signInWithPassword({ email: ADMIN_LOGIN_EMAIL, password });
+        if (error) alert("Incorrect admin password.");
+    }
+
+    async function signOut() {
+        await db.auth.signOut();
+    }
+
+    // --- Boot / session handling ---
+
+    function showLogin() {
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("appContent").style.display = "none";
+    }
+
+    let entering = false;
+    async function enterApp(userId) {
+        if (entering) return;
+        entering = true;
+        try {
+            state.userId = userId;
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("appContent").style.display = "block";
+            await loadAll();
+        } finally {
+            entering = false;
+        }
+    }
+
+    db.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+            enterApp(session.user.id);
+        } else {
+            state = { ...state, userId: null, me: null, isAdmin: false };
+            showLogin();
+        }
+    });
+
+    db.auth.getSession().then(({ data }) => {
+        if (data?.session?.user) enterApp(data.session.user.id);
+        else showLogin();
+    });
+
+    // --- Data loading ---
+
+    async function loadAll() {
+        const [
+            meRes, missRes, leadRes, calRes, rsvpRes, sitesRes, gatherRes,
+            resRes, distRes, compRes, notesRes, meetingsRes, settingsRes
+        ] = await Promise.all([
+            db.from("missionaries").select("*").eq("auth_user_id", state.userId).maybeSingle(),
+            db.from("missionaries").select("*").order("name"),
+            db.from("leadership").select("*").order("created_at"),
+            db.from("calendar_events").select("*").order("created_at"),
+            db.from("event_rsvps").select("id, event_id, missionary_id, missionaries(name)"),
+            db.from("service_sites").select("*").order("created_at"),
+            db.from("gatherings").select("*").order("created_at"),
+            db.from("resources").select("*").order("created_at"),
+            db.from("districts").select("*").order("created_at"),
+            db.from("companionships").select("*").order("created_at"),
+            db.from("general_notes").select("*").order("created_at"),
+            db.from("meetings").select("*").order("created_at"),
+            db.from("section_settings").select("*")
+        ]);
+
+        state.me = meRes.data ?? null;
+        state.isAdmin = state.me?.app_role === "admin";
+        if (!state.isAdmin) {
+            const { data: sessionData } = await db.auth.getSession();
+            if (sessionData?.session?.user?.email === ADMIN_LOGIN_EMAIL) {
+                state.isAdmin = true;
+            }
+        }
+        state.missionaries = missRes.data ?? [];
+        state.leadership = leadRes.data ?? [];
+        state.serviceSites = sitesRes.data ?? [];
+        state.gatherings = gatherRes.data ?? [];
+        state.resources = resRes.data ?? [];
+        state.districts = distRes.data ?? [];
+        state.companionships = compRes.data ?? [];
+        state.generalNotes = notesRes.data ?? [];
+        state.meetings = meetingsRes.data ?? [];
+        const settingsMap = {};
+        (settingsRes.data ?? []).forEach((r) => { settingsMap[r.section_key] = r.default_open; });
+        state.sectionSettings = settingsMap;
+
+        const rsvpsByEvent = {};
+        (rsvpRes.data ?? []).forEach((r) => {
+            (rsvpsByEvent[r.event_id] ||= []).push({ id: r.id, missionary_id: r.missionary_id, name: r.missionaries?.name ?? "Unknown" });
+        });
+        state.calendarEvents = (calRes.data ?? []).map((ev) => ({ ...ev, rsvps: rsvpsByEvent[ev.id] || [] }));
+
+        document.body.classList.toggle("admin-mode", state.isAdmin);
+        const adminBtn = document.getElementById("adminBtn");
+        adminBtn.innerText = state.isAdmin ? "Lock" : "Admin";
+        adminBtn.style.background = state.isAdmin ? "var(--danger)" : "#ffffff";
+        adminBtn.style.color = state.isAdmin ? "#fff" : "var(--primary)";
+        renderApp();
+    }
+
+    // --- Tab switching ---
+
+    function switchTab(tabName) {
+        document.querySelectorAll(".tab-content").forEach((tab) => tab.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.remove("active"));
+        document.getElementById(tabName).classList.add("active");
+        document.querySelectorAll(`.tab-btn[data-tab="${tabName}"]`).forEach((btn) => btn.classList.add("active"));
+        window.scrollTo(0, 0);
+    }
+
+    // --- Rendering ---
+
+    const STATIC_SECTION_KEYS = ["meetings", "events", "birthdays", "leadership"];
+    let staticSectionOpenStatesApplied = false;
+
+    // Applied once per page load (not on every data refresh) so an admin's
+    // chosen default doesn't fight with a user's own open/closed clicks
+    // during their visit -- it only sets where things start out.
+    function applyInitialSectionOpenStates() {
+        if (staticSectionOpenStatesApplied) return;
+        staticSectionOpenStatesApplied = true;
+        STATIC_SECTION_KEYS.forEach((key) => {
+            const el = document.getElementById(`section-${key}`);
+            if (el) el.open = !!state.sectionSettings[key];
+        });
+    }
+
+    function renderSectionDefaultButtons() {
+        STATIC_SECTION_KEYS.forEach((key) => {
+            const btn = document.querySelector(`.section-default-btn[data-section="${key}"]`);
+            if (btn) btn.textContent = state.sectionSettings[key] ? "Starts Open" : "Starts Closed";
+        });
+    }
+
+    async function toggleSectionDefault(event, key) {
+        event.preventDefault();
+        event.stopPropagation();
+        const next = !state.sectionSettings[key];
+        state.sectionSettings[key] = next;
+        renderSectionDefaultButtons();
+        await db.from("section_settings").update({ default_open: next }).eq("section_key", key);
+    }
+
+    async function toggleNoteDefault(event, id, current) {
+        event.preventDefault();
+        event.stopPropagation();
+        await db.from("general_notes").update({ default_open: !current }).eq("id", id);
+        await loadAll();
+    }
+
+    function renderApp() {
+        applyInitialSectionOpenStates();
+        renderSectionDefaultButtons();
+        renderMeetings();
+        renderUpcomingEvents();
+        renderGatheringsCarousel();
+        renderUpcomingBirthdays();
+        renderStartingSoonInto("startingSoonMissionariesList");
+        renderLeadership();
+        renderGeneralNotes();
+        renderCalendarGrid();
+        renderUnscheduledEvents();
+        renderSites();
+        renderGatherings();
+        renderResources();
+        renderDistricts();
+        renderCompanionships();
+        renderMissionaries();
+        setEditableElements();
+        filterMissionaries();
+        filterCompanionships();
+    }
+
+    function setEditableElements() {
+        document.querySelectorAll(".district-content").forEach((el) => {
+            el.contentEditable = state.isAdmin;
+            el.classList.toggle("editing", state.isAdmin);
+            el.onblur = () => updateDistrictContent(el.dataset.id, el.innerHTML);
+        });
+
+        document.querySelectorAll(".custom-note").forEach((el) => {
+            el.contentEditable = state.isAdmin;
+            el.classList.toggle("editing", state.isAdmin);
+            el.onblur = () => updateGeneralNoteContent(el.dataset.id, el.innerHTML);
+        });
+    }
+
+    // Meetings
+    function renderMeetings() {
+        const el = document.getElementById("meetingsList");
+        if (!el) return;
+        if (state.meetings.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No meetings added yet.</p>`;
+            return;
+        }
+        el.innerHTML = state.meetings.map((mtg) => `
+            <div class="data-row">
+                <div class="data-row-head">
+                    <h4>${esc(mtg.title)}</h4>
+                    ${mtg.time_text ? `<span class="badge-pill">${icon("clock", 14)} ${esc(mtg.time_text)}</span>` : ""}
+                </div>
+                ${mtg.details ? `<p class="data-row-desc">${esc(mtg.details)}</p>` : ""}
+                ${addressRow(mtg.address)}
+                <div class="admin-controls">
+                    <button class="btn btn-danger btn-sm" onclick="deleteMeeting('${mtg.id}')" style="margin-top:4px;">Delete Meeting</button>
+                </div>
+            </div>`).join("");
+    }
+
+    async function addMeeting() {
+        const title = prompt("Meeting name (e.g. District Meeting):");
+        if (!title) return;
+        const time_text = prompt("Time (e.g. 3:30 PM, or 'Every Monday 7am'):");
+        const address = prompt("Address (optional):");
+        const details = prompt("Other details (optional):");
+        await db.from("meetings").insert({ title, time_text, address, details });
+        await loadAll();
+    }
+
+    async function deleteMeeting(id) {
+        if (!confirm("Delete this meeting?")) return;
+        await db.from("meetings").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Upcoming events / gatherings (General tab summaries -- full CRUD stays
+    // on the Calendar tab). Split by event_type so each section only shows
+    // its own kind.
+    function eventRowHtml(ev) {
+        const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+        const badge = isUrgent ? `<span class="urgent-badge">Mandatory</span>` : "";
+        const whenLabel = ev.repeats_weekly && ev.event_date_iso
+            ? `Every ${new Date(`${ev.event_date_iso}T00:00:00`).toLocaleDateString(undefined, { weekday: "long" })}${ev.event_date ? ` • ${ev.event_date}` : ""}`
+            : ev.event_date;
+        return `
+            <div class="data-row">
+                <div class="data-row-head">
+                    <h4>${esc(ev.title)} ${badge}</h4>
+                    <span class="badge-pill">${esc(whenLabel)}</span>
+                </div>
+                ${ev.description ? `<p class="data-row-desc">${esc(ev.description)}</p>` : ""}
+                ${addressRow(ev.address)}
+                ${linkRow(ev.link)}
+            </div>`;
+    }
+
+    function renderUpcomingEvents() {
+        const el = document.getElementById("upcomingEventsList");
+        if (!el) return;
+        const meetings = state.calendarEvents.filter((ev) => ev.event_type !== "gathering");
+        el.innerHTML = meetings.length === 0
+            ? `<p class="empty-hint">No events on the calendar yet.</p>`
+            : meetings.map(eventRowHtml).join("");
+    }
+
+    // Gatherings carousel -- swipeable, soonest first, above everything
+    // else on the General tab since these are time-sensitive.
+    function renderGatheringsCarousel() {
+        const wrap = document.getElementById("gatheringsCarouselWrap");
+        if (!wrap) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = state.calendarEvents
+            .filter((ev) => ev.event_type === "gathering" && ev.event_date_iso)
+            .map((ev) => ({ ev, start: nextOccurrence(ev, today) }))
+            .filter(({ start }) => start && start >= today)
+            .sort((a, b) => a.start - b.start);
+
+        if (upcoming.length === 0) {
+            wrap.innerHTML = "";
+            return;
+        }
+
+        wrap.innerHTML = `
+            <div class="gatherings-carousel-section">
+                <div class="gatherings-carousel-title">Upcoming Gatherings</div>
+                <div class="gatherings-carousel" id="gatheringsCarousel">
+                    ${upcoming.map(({ ev, start }) => gatheringCardHtml(ev, start, today)).join("")}
+                </div>
+                ${upcoming.length > 1 ? `
+                    <div class="gatherings-carousel-dots" id="gatheringsCarouselDots">
+                        ${upcoming.map((_, i) => `<span class="carousel-dot${i === 0 ? " active" : ""}"></span>`).join("")}
+                    </div>` : ""}
+            </div>`;
+
+        setupGatheringsCarouselDots();
+    }
+
+    function gatheringCardHtml(ev, start, today) {
+        const dateLabel = ev.repeats_weekly
+            ? `Every ${start.toLocaleDateString(undefined, { weekday: "long" })}`
+            : start.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+        const days = Math.round((start - today) / 86400000);
+        const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+        const rsvps = ev.rsvps || [];
+        const rsvpHtml = rsvps.length > 0
+            ? rsvps.map((r) => `<span class="rsvp-badge">${esc(r.name)} <span class="rsvp-remove" onclick="removeRsvp('${r.id}', '${ev.id}')">&times;</span></span>`).join("")
+            : `<span style="opacity:0.85;">No RSVPs yet -- be the first!</span>`;
+
+        return `
+            <div class="gathering-card">
+                <span class="badge-pill">${esc(when)}</span>
+                <h3>${esc(ev.title)}</h3>
+                <p class="gathering-card-date">${esc(dateLabel)}${ev.event_date ? ` • ${esc(ev.event_date)}` : ""}</p>
+                ${ev.description ? `<p class="gathering-card-desc">${esc(ev.description)}</p>` : ""}
+                ${addressRow(ev.address)}
+                ${linkRow(ev.link)}
+                <div class="gathering-rsvp-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong style="color:#fff; font-size:0.95rem;">RSVPs (${rsvps.length})</strong>
+                        <button class="btn btn-outline btn-sm" onclick="addRsvp('${ev.id}')">+ RSVP</button>
+                    </div>
+                    <div>${rsvpHtml}</div>
+                </div>
+            </div>`;
+    }
+
+    function setupGatheringsCarouselDots() {
+        const carousel = document.getElementById("gatheringsCarousel");
+        const dotsWrap = document.getElementById("gatheringsCarouselDots");
+        if (!carousel || !dotsWrap) return;
+        const cards = [...carousel.children];
+        const dots = [...dotsWrap.children];
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                    const idx = cards.indexOf(entry.target);
+                    dots.forEach((d, i) => d.classList.toggle("active", i === idx));
+                }
+            });
+        }, { root: carousel, threshold: [0.6] });
+        cards.forEach((c) => observer.observe(c));
+    }
+
+    // Upcoming birthdays (derived from the Missionaries tab, read-only here)
+    function renderUpcomingBirthdays() {
+        const el = document.getElementById("upcomingBirthdaysList");
+        if (!el) return;
+        const upcoming = state.missionaries
+            .map((m) => ({ m, days: daysUntilBirthday(m.birthday) }))
+            .filter((x) => x.days !== null)
+            .sort((a, b) => a.days - b.days)
+            .slice(0, 5);
+        if (upcoming.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No birthdays on file yet.</p>`;
+            return;
+        }
+        el.innerHTML = upcoming.map(({ m, days }) => {
+            const avatar = m.photo_url
+                ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+                : esc((m.name || "?").trim().charAt(0).toUpperCase());
+            const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+            return `
+                <div class="birthday-row">
+                    <div class="birthday-avatar">${avatar}</div>
+                    <div class="birthday-info">
+                        <strong>${esc(m.name)}</strong>
+                        <span class="text-muted">${esc(m.birthday)}</span>
+                    </div>
+                    <span class="badge-pill${days === 0 ? " badge-today" : ""}">${when}</span>
+                </div>`;
+        }).join("");
+    }
+
+    // Leadership -- each row links to a Missionary profile for photo/name/phone
+    function renderLeadership() {
+        const el = document.getElementById("leadersList");
+        if (state.leadership.length === 0) {
+            el.innerHTML = `<p class="empty-hint">No leaders added yet.</p>`;
+            return;
+        }
+        el.innerHTML = state.leadership.map((ldr) => {
+            const m = state.missionaries.find((x) => x.id === ldr.missionary_id);
+            // Legacy rows (added before leaders were linked to a missionary
+            // profile) still carry their own name/phone/emoji as a fallback.
+            const person = m || { name: ldr.name, phone: ldr.phone, emoji: ldr.emoji, photo_url: null };
+            return `
+                <div style="position: relative;">
+                    ${leaderCardHtml(person, ldr.role_title)}
+                    <div class="admin-controls" style="position: absolute; right: 15px; top: 15px; margin: 0;">
+                        <button class="btn btn-danger btn-sm" onclick="deleteLeader('${ldr.id}')">Delete</button>
+                    </div>
+                </div>`;
+        }).join("");
+    }
+
+    function openLeaderModal() {
+        if (state.missionaries.length === 0) {
+            alert("Add a missionary first (Missionaries tab), then come back to assign them a leadership role.");
+            return;
+        }
+        const sel = document.getElementById("ldrMissionary");
+        sel.innerHTML = state.missionaries.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("");
+        document.getElementById("ldrRole").value = "";
+        document.getElementById("leaderModal").style.display = "flex";
+    }
+    function closeLeaderModal() { document.getElementById("leaderModal").style.display = "none"; }
+
+    async function saveLeader() {
+        const missionaryId = document.getElementById("ldrMissionary").value;
+        const roleTitle = document.getElementById("ldrRole").value;
+        if (!missionaryId) { alert("Choose a missionary."); return; }
+        const { error } = await db.from("leadership").insert({ role_title: roleTitle, missionary_id: missionaryId });
+        if (error) { alert(error.message); return; }
+        closeLeaderModal();
+        await loadAll();
+    }
+
+    async function deleteLeader(id) {
+        if (!confirm("Delete this leader?")) return;
+        await db.from("leadership").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // General notes
+    function renderGeneralNotes() {
+        const el = document.getElementById("generalNotesContainer");
+        el.innerHTML = "";
+        state.generalNotes.forEach((note) => {
+            const isUrgent = note.color && note.color.toLowerCase() === "red";
+            const badge = isUrgent ? `<span class="urgent-badge">Mandatory/Urgent</span>` : "";
+            const borderStyle = note.color ? `border-left-color: ${esc(note.color)};` : "";
+            el.innerHTML += `
+                <details class="card section-card" style="${borderStyle}"${note.default_open ? " open" : ""}>
+                    <summary>
+                        <span>${esc(note.title)} ${badge}</span>
+                        <span class="summary-controls">
+                            <button class="admin-controls-inline section-default-btn" onclick="toggleNoteDefault(event, '${note.id}', ${note.default_open ? "true" : "false"})">${note.default_open ? "Starts Open" : "Starts Closed"}</button>
+                            ${chevronIcon(20)}
+                        </span>
+                    </summary>
+                    <div class="section-body">
+                        <div class="editable custom-note" data-id="${note.id}">${note.content_html}</div>
+                        <div class="admin-controls">
+                            <button class="btn btn-danger btn-sm" onclick="deleteGeneralNote('${note.id}')" style="margin-top:10px;">Delete Section</button>
+                        </div>
+                    </div>
+                </details>`;
+        });
+    }
+
+    async function addGeneralNote() {
+        const title = prompt("Enter a title for this new section (e.g., 'Zone Goals'):");
+        if (!title) return;
+        const color = prompt("Enter a color for this note (type 'red' for Mandatory/Urgent, or leave blank):", "");
+        await db.from("general_notes").insert({
+            title, content_html: "Click here to add notes...", color
+        });
+        await loadAll();
+    }
+
+    async function deleteGeneralNote(id) {
+        if (!confirm("Are you sure you want to delete this note section?")) return;
+        await db.from("general_notes").delete().eq("id", id);
+        await loadAll();
+    }
+
+    async function updateGeneralNoteContent(id, html) {
+        if (!state.isAdmin) return;
+        await db.from("general_notes").update({ content_html: html }).eq("id", id);
+    }
+
+    // Calendar -- month grid with event titles on their day, tap for details
+    const MONTH_LABELS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    let calendarViewYear, calendarViewMonth; // 0-11
+
+    function toIsoDate(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+
+    // Weekly recurrence -- no separate rows per occurrence, just one event
+    // that virtually repeats on the same weekday from its start date on.
+    function eventOccursOn(ev, cellDate) {
+        if (!ev.event_date_iso) return false;
+        const anchor = new Date(`${ev.event_date_iso}T00:00:00`);
+        if (ev.repeats_weekly) {
+            return cellDate >= anchor && cellDate.getDay() === anchor.getDay();
+        }
+        return toIsoDate(cellDate) === ev.event_date_iso;
+    }
+
+    // Next date (>= fromDate) this event actually falls on -- the anchor
+    // date itself for a one-off event, or the next matching weekday for a
+    // repeating one. Returns null if a one-off event's date has passed.
+    function nextOccurrence(ev, fromDate) {
+        if (!ev.event_date_iso) return null;
+        const anchor = new Date(`${ev.event_date_iso}T00:00:00`);
+        if (!ev.repeats_weekly) return anchor;
+        if (anchor >= fromDate) return anchor;
+        const daysBehind = Math.round((fromDate - anchor) / 86400000);
+        const weeksToAdd = Math.ceil(daysBehind / 7);
+        const next = new Date(anchor);
+        next.setDate(next.getDate() + weeksToAdd * 7);
+        return next;
+    }
+
+    function changeCalendarMonth(delta) {
+        renderCalendarGrid(); // ensures the year/month vars are initialized
+        calendarViewMonth += delta;
+        if (calendarViewMonth < 0) { calendarViewMonth = 11; calendarViewYear--; }
+        if (calendarViewMonth > 11) { calendarViewMonth = 0; calendarViewYear++; }
+        renderCalendarGrid();
+    }
+
+    function goToCurrentMonth() {
+        const now = new Date();
+        calendarViewYear = now.getFullYear();
+        calendarViewMonth = now.getMonth();
+        renderCalendarGrid();
+    }
+
+    function renderCalendarGrid() {
+        if (calendarViewYear === undefined) {
+            const now = new Date();
+            calendarViewYear = now.getFullYear();
+            calendarViewMonth = now.getMonth();
+        }
+
+        const label = document.getElementById("calendarMonthLabel");
+        if (label) label.textContent = `${MONTH_LABELS[calendarViewMonth]} ${calendarViewYear}`;
+
+        const grid = document.getElementById("calendarGrid");
+        if (!grid) return;
+
+        const firstOfMonth = new Date(calendarViewYear, calendarViewMonth, 1);
+        const startWeekday = firstOfMonth.getDay();
+        const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(calendarViewYear, calendarViewMonth, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let cells = [];
+        for (let i = 0; i < 42; i++) {
+            const dayOffset = i - startWeekday;
+            let cellDate, otherMonth;
+            if (dayOffset < 0) {
+                cellDate = new Date(calendarViewYear, calendarViewMonth - 1, daysInPrevMonth + dayOffset + 1);
+                otherMonth = true;
+            } else if (dayOffset >= daysInMonth) {
+                cellDate = new Date(calendarViewYear, calendarViewMonth + 1, dayOffset - daysInMonth + 1);
+                otherMonth = true;
+            } else {
+                cellDate = new Date(calendarViewYear, calendarViewMonth, dayOffset + 1);
+                otherMonth = false;
+            }
+            const dayEvents = state.calendarEvents.filter((ev) => eventOccursOn(ev, cellDate));
+            cells.push({ cellDate, otherMonth, isToday: cellDate.getTime() === today.getTime(), dayEvents });
+        }
+        // Trim a trailing week that's entirely next-month padding.
+        while (cells.length > 35 && cells.slice(-7).every((c) => c.otherMonth)) {
+            cells = cells.slice(0, -7);
+        }
+
+        grid.innerHTML = cells.map(({ cellDate, otherMonth, isToday, dayEvents }) => {
+            const chips = dayEvents.map((ev) => {
+                const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+                const chipClass = isUrgent ? " event-chip-urgent" : (ev.event_type === "gathering" ? " event-chip-gathering" : "");
+                return `<button class="event-chip${chipClass}" onclick="openEventDetailsModal('${ev.id}')" title="${esc(ev.title)}">${esc(ev.title)}</button>`;
+            }).join("");
+            return `
+                <div class="calendar-day${otherMonth ? " other-month" : ""}${isToday ? " today" : ""}">
+                    <span class="calendar-day-num">${cellDate.getDate()}</span>
+                    <div class="calendar-day-events">${chips}</div>
+                </div>`;
+        }).join("");
+    }
+
+    function renderUnscheduledEvents() {
+        const el = document.getElementById("calendarUnscheduled");
+        if (!el) return;
+        const unscheduled = state.calendarEvents.filter((ev) => !ev.event_date_iso);
+        if (unscheduled.length === 0) { el.innerHTML = ""; return; }
+        el.innerHTML = `<h3 style="margin: 24px 0 12px;">Other Events</h3>` + unscheduled.map((ev) => {
+            const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+            const badge = isUrgent ? `<span class="urgent-badge">Mandatory</span>` : "";
+            return `
+                <div class="data-row" style="cursor:pointer;" onclick="openEventDetailsModal('${ev.id}')">
+                    <div class="data-row-head">
+                        <h4>${esc(ev.title)} ${badge}</h4>
+                        ${ev.event_date ? `<span class="badge-pill">${esc(ev.event_date)}</span>` : ""}
+                    </div>
+                    ${ev.description ? `<p class="data-row-desc">${esc(ev.description)}</p>` : ""}
+                </div>`;
+        }).join("");
+    }
+
+    // Event details modal (tap a chip or an "Other Events" row)
+    function openEventDetailsModal(id) {
+        const ev = state.calendarEvents.find((x) => x.id === id);
+        if (!ev) return;
+        document.getElementById("eventDetailsId").value = id;
+        const isUrgent = ev.color && ev.color.toLowerCase() === "red";
+        document.getElementById("eventDetailsTitle").innerHTML = `${esc(ev.title)} ${isUrgent ? '<span class="urgent-badge">Mandatory</span>' : ""}`;
+
+        let dateLabel = "";
+        if (ev.event_date_iso) {
+            const anchor = new Date(`${ev.event_date_iso}T00:00:00`);
+            dateLabel = ev.repeats_weekly
+                ? `Every ${anchor.toLocaleDateString(undefined, { weekday: "long" })} (since ${anchor.toLocaleDateString(undefined, { month: "long", day: "numeric" })})`
+                : anchor.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+        }
+        document.getElementById("eventDetailsDate").textContent = [dateLabel, ev.event_date || ""].filter(Boolean).join(" • ");
+
+        const descEl = document.getElementById("eventDetailsDesc");
+        descEl.textContent = ev.description || "";
+        descEl.style.display = ev.description ? "block" : "none";
+
+        document.getElementById("eventDetailsAddress").innerHTML = addressRow(ev.address);
+        document.getElementById("eventDetailsLink").innerHTML = linkRow(ev.link);
+
+        const rsvps = ev.rsvps || [];
+        document.getElementById("eventDetailsRsvpCount").textContent = `RSVPs (${rsvps.length})`;
+        document.getElementById("eventDetailsRsvpList").innerHTML = rsvps.length > 0
+            ? rsvps.map((r) => `<span class="rsvp-badge">${esc(r.name)} <span class="rsvp-remove" onclick="removeRsvp('${r.id}', '${ev.id}')">&times;</span></span>`).join("")
+            : "None yet.";
+
+        document.getElementById("eventDetailsModal").style.display = "flex";
+    }
+    function closeEventDetailsModal() { document.getElementById("eventDetailsModal").style.display = "none"; }
+
+    function editEventFromDetails() {
+        const id = document.getElementById("eventDetailsId").value;
+        closeEventDetailsModal();
+        openCalendarEventModal(id);
+    }
+
+    async function deleteEventFromDetails() {
+        const id = document.getElementById("eventDetailsId").value;
+        if (!confirm("Delete this event?")) return;
+        await db.from("calendar_events").delete().eq("id", id);
+        closeEventDetailsModal();
+        await loadAll();
+    }
+
+    // Add/Edit event modal
+    function openCalendarEventModal(id = null) {
+        if (id) {
+            const ev = state.calendarEvents.find((x) => x.id === id);
+            document.getElementById("calendarEventModalTitle").innerText = "Edit Event";
+            document.getElementById("cevId").value = ev.id;
+            document.getElementById("cevTitle").value = ev.title || "";
+            document.getElementById("cevType").value = ev.event_type || "meeting";
+            document.getElementById("cevDate").value = ev.event_date_iso || "";
+            document.getElementById("cevRepeats").checked = !!ev.repeats_weekly;
+            document.getElementById("cevTimeLabel").value = ev.event_date || "";
+            document.getElementById("cevDesc").value = ev.description || "";
+            document.getElementById("cevAddress").value = ev.address || "";
+            document.getElementById("cevLink").value = ev.link || "";
+            document.getElementById("cevColor").value = ev.color || "";
+        } else {
+            document.getElementById("calendarEventModalTitle").innerText = "Add Event";
+            document.getElementById("cevId").value = "";
+            document.getElementById("cevTitle").value = "";
+            document.getElementById("cevType").value = "meeting";
+            document.getElementById("cevDate").value = "";
+            document.getElementById("cevRepeats").checked = false;
+            document.getElementById("cevTimeLabel").value = "";
+            document.getElementById("cevDesc").value = "";
+            document.getElementById("cevAddress").value = "";
+            document.getElementById("cevLink").value = "";
+            document.getElementById("cevColor").value = "";
+        }
+        document.getElementById("calendarEventModal").style.display = "flex";
+    }
+    function closeCalendarEventModal() { document.getElementById("calendarEventModal").style.display = "none"; }
+
+    async function saveCalendarEvent() {
+        const id = document.getElementById("cevId").value;
+        const payload = {
+            title: document.getElementById("cevTitle").value,
+            event_type: document.getElementById("cevType").value,
+            event_date_iso: document.getElementById("cevDate").value || null,
+            repeats_weekly: document.getElementById("cevRepeats").checked,
+            event_date: document.getElementById("cevTimeLabel").value,
+            description: document.getElementById("cevDesc").value,
+            address: document.getElementById("cevAddress").value,
+            link: document.getElementById("cevLink").value,
+            color: document.getElementById("cevColor").value
+        };
+        let error;
+        if (id) {
+            ({ error } = await db.from("calendar_events").update(payload).eq("id", id));
+        } else {
+            ({ error } = await db.from("calendar_events").insert(payload));
+        }
+        if (error) { alert(error.message); return; }
+        closeCalendarEventModal();
+        await loadAll();
+    }
+
+    async function addRsvp(eventId) {
+        const name = prompt("Enter your name to RSVP:");
+        if (!name) return;
+        const match = state.missionaries.find((m) => m.name.trim().toLowerCase() === name.trim().toLowerCase());
+        if (!match) {
+            alert(`No missionary named "${name}" found. Check the spelling, or add yourself first in the Missionaries tab.`);
+            return;
+        }
+        const { error } = await db.from("event_rsvps").insert({ event_id: eventId, missionary_id: match.id });
+        if (error && !error.message.includes("duplicate")) alert(error.message);
+        await loadAll();
+        if (document.getElementById("eventDetailsModal").style.display === "flex") openEventDetailsModal(eventId);
+    }
+
+    async function removeRsvp(rsvpId, eventId) {
+        if (!confirm("Are you sure you want to remove this RSVP?")) return;
+        await db.from("event_rsvps").delete().eq("id", rsvpId);
+        await loadAll();
+        if (eventId && document.getElementById("eventDetailsModal").style.display === "flex") openEventDetailsModal(eventId);
+    }
+
+    // Service sites
+    function renderSites() {
+        const el = document.getElementById("sitesList");
+        el.innerHTML = "";
+        state.serviceSites.forEach((site) => {
+            el.innerHTML += `
+                <div class="data-row">
+                    <h4 style="color:var(--primary); margin:0 0 6px 0; font-size: 1.1rem;">${esc(site.title)}</h4>
+                    <p style="margin:0 0 8px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(site.description)}</p>
+                    ${addressRow(site.address)}
+                    ${copyableRow(site.contact)}
+                    <div class="admin-controls">
+                        <button class="btn btn-danger btn-sm" onclick="deleteSite('${site.id}')" style="margin-top: 6px;">Delete Site</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function addSite() {
+        const title = prompt("Site Name (e.g. Local Food Bank):");
+        if (!title) return;
+        const desc = prompt("Site Description/Details:");
+        const address = prompt("Site Address (for maps + copy button, optional):");
+        const contact = prompt("Contact Info (name/phone/email):");
+        await db.from("service_sites").insert({ title, description: desc, address, contact });
+        await loadAll();
+    }
+
+    async function deleteSite(id) {
+        if (!confirm("Delete this approved site?")) return;
+        await db.from("service_sites").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Gatherings
+    function renderGatherings() {
+        const el = document.getElementById("gatheringsList");
+        el.innerHTML = "";
+        state.gatherings.forEach((g) => {
+            const gColor = g.color || "var(--primary)";
+            const gEmoji = g.emoji ? `<span style="font-size:1.2rem; margin-right:5px;">${esc(g.emoji)}</span>` : "";
+            el.innerHTML += `
+                <div class="data-row" style="border-left: 4px solid ${esc(gColor)};">
+                    <h4 style="color:var(--text-main); margin:0 0 5px 0; font-size: 1.1rem; display:flex; align-items:center;">
+                        ${gEmoji} ${esc(g.title)}
+                    </h4>
+                    <p style="margin:0 0 5px 0; font-size: 0.85em; color:${esc(gColor)}; font-weight: bold;">${esc(g.date_text)}</p>
+                    <p style="margin:0 0 10px 0; font-size: 0.95em; color:var(--text-main); line-height: 1.4;">${esc(g.description)}</p>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-outline btn-sm" onclick="openGatheringModal('${g.id}')">Edit Idea</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteGathering('${g.id}')">Delete Idea</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function openGatheringModal(id = null) {
+        const modal = document.getElementById("gatheringModal");
+        if (id) {
+            const g = state.gatherings.find((x) => x.id === id);
+            document.getElementById("gatheringModalTitle").innerText = "Edit Gathering / Idea";
+            document.getElementById("gathId").value = g.id;
+            document.getElementById("gathTitle").value = g.title;
+            document.getElementById("gathDate").value = g.date_text;
+            document.getElementById("gathDesc").value = g.description;
+            document.getElementById("gathEmoji").value = g.emoji || "";
+            document.getElementById("gathColor").value = g.color || "#2f6fed";
+        } else {
+            document.getElementById("gatheringModalTitle").innerText = "Add Gathering / Idea";
+            document.getElementById("gathId").value = "";
+            document.getElementById("gathTitle").value = "";
+            document.getElementById("gathDate").value = "";
+            document.getElementById("gathDesc").value = "";
+            document.getElementById("gathEmoji").value = "";
+            document.getElementById("gathColor").value = "#2f6fed";
+        }
+        modal.style.display = "flex";
+    }
+    function closeGatheringModal() { document.getElementById("gatheringModal").style.display = "none"; }
+
+    async function saveGathering() {
+        const id = document.getElementById("gathId").value;
+        const payload = {
+            title: document.getElementById("gathTitle").value,
+            date_text: document.getElementById("gathDate").value,
+            description: document.getElementById("gathDesc").value,
+            emoji: document.getElementById("gathEmoji").value,
+            color: document.getElementById("gathColor").value
+        };
+        let error;
+        if (id) {
+            ({ error } = await db.from("gatherings").update(payload).eq("id", id));
+        } else {
+            ({ error } = await db.from("gatherings").insert(payload));
+        }
+        if (error) { alert(error.message); return; }
+        closeGatheringModal();
+        await loadAll();
+    }
+
+    async function deleteGathering(id) {
+        if (!confirm("Delete this gathering/idea?")) return;
+        await db.from("gatherings").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Resources
+    function renderResources() {
+        const el = document.getElementById("resourcesList");
+        el.innerHTML = "";
+        state.resources.forEach((res) => {
+            el.innerHTML += `
+                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <h3 style="text-align: center;">${esc(res.title)}</h3>
+                    <a href="${esc(res.url)}" target="_blank" rel="noopener noreferrer" class="resource-link">Open Document</a>
+                    <div class="admin-controls">
+                        <button class="btn btn-danger btn-block" onclick="deleteResource('${res.id}')">Delete</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function addResource() {
+        const title = prompt("Document Title (e.g., Zone Map, July Training):");
+        if (!title) return;
+        const url = prompt("Paste the Share Link (Google Drive, Dropbox, OneDrive, etc.):");
+        if (!url) return;
+        await db.from("resources").insert({ title, url });
+        await loadAll();
+    }
+
+    async function deleteResource(id) {
+        if (!confirm("Are you sure you want to delete this resource link?")) return;
+        await db.from("resources").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Districts
+    function renderDistricts() {
+        const el = document.getElementById("districtsList");
+        el.innerHTML = "";
+        state.districts.forEach((d) => {
+            const members = state.missionaries.filter((m) =>
+                (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase()
+                && m.id !== d.leader1_id && m.id !== d.leader2_id
+            );
+            const leader1 = state.missionaries.find((m) => m.id === d.leader1_id);
+            const leader2 = state.missionaries.find((m) => m.id === d.leader2_id);
+            el.innerHTML += `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>${esc(d.name)}</h3>
+                        <div class="admin-controls" style="margin:0; display:flex; gap:8px;">
+                            <button class="btn btn-outline btn-sm" onclick="renameDistrict('${d.id}')">Rename</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteDistrict('${d.id}')">Delete</button>
+                        </div>
+                    </div>
+                    <div class="editable district-content" data-id="${d.id}">${d.content_html || ""}</div>
+
+                    <h4 style="margin: 18px 0 10px; color: var(--text-main); font-size: 0.95rem;">Leaders</h4>
+                    <div class="admin-controls" style="margin-bottom: 12px;">
+                        <button class="btn btn-outline btn-sm" onclick="openDistrictLeadersModal('${d.id}')">Set Leaders</button>
+                    </div>
+                    ${leader1 ? leaderCardHtml(leader1, "Leader") : emptyLeaderSlot()}
+                    ${leader2 ? leaderCardHtml(leader2, "Leader") : emptyLeaderSlot()}
+
+                    <h4 style="margin: 18px 0 10px; color: var(--text-main); font-size: 0.95rem;">Members (${members.length})</h4>
+                    <div class="admin-controls" style="margin-bottom: 12px;">
+                        <button class="btn btn-outline btn-sm" onclick="openDistrictMembersModal('${d.id}')">Manage Members</button>
+                    </div>
+                    ${memberTilesHtml(members)}
+                </div>`;
+        });
+    }
+
+    async function addDistrict() {
+        const name = prompt("District name (e.g., District 3):");
+        if (!name) return;
+        await db.from("districts").insert({ name, content_html: "" });
+        await loadAll();
+    }
+
+    async function renameDistrict(id) {
+        const d = state.districts.find((x) => x.id === id);
+        const oldName = d?.name || "";
+        const newName = prompt("Rename district:", oldName);
+        if (!newName || newName.trim() === oldName.trim()) return;
+
+        // Membership is matched by comparing each missionary's District
+        // field against this name -- renaming the district without also
+        // updating every member's profile would silently drop all of them
+        // out of it (this is exactly the bug that was just reported).
+        const memberIds = state.missionaries
+            .filter((m) => (m.district || "").trim().toLowerCase() === oldName.trim().toLowerCase())
+            .map((m) => m.id);
+
+        await db.from("districts").update({ name: newName }).eq("id", id);
+        if (memberIds.length > 0) {
+            await db.from("missionaries").update({ district: newName }).in("id", memberIds);
+        }
+        await loadAll();
+    }
+
+    async function deleteDistrict(id) {
+        if (!confirm("Delete this district?")) return;
+        await db.from("districts").delete().eq("id", id);
+        await loadAll();
+    }
+
+    async function updateDistrictContent(id, html) {
+        if (!state.isAdmin) return;
+        await db.from("districts").update({ content_html: html }).eq("id", id);
+    }
+
+    // District leaders: pick up to 2 missionaries from a dropdown
+    function openDistrictLeadersModal(id) {
+        const d = state.districts.find((x) => x.id === id);
+        document.getElementById("distLeadersId").value = id;
+        const options = `<option value="">None</option>` + state.missionaries.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("");
+        const sel1 = document.getElementById("distLeader1");
+        const sel2 = document.getElementById("distLeader2");
+        sel1.innerHTML = options;
+        sel2.innerHTML = options;
+        sel1.value = d.leader1_id || "";
+        sel2.value = d.leader2_id || "";
+        document.getElementById("districtLeadersModal").style.display = "flex";
+    }
+    function closeDistrictLeadersModal() { document.getElementById("districtLeadersModal").style.display = "none"; }
+
+    async function saveDistrictLeaders() {
+        const id = document.getElementById("distLeadersId").value;
+        const leader1_id = document.getElementById("distLeader1").value || null;
+        const leader2_id = document.getElementById("distLeader2").value || null;
+        await db.from("districts").update({ leader1_id, leader2_id }).eq("id", id);
+        closeDistrictLeadersModal();
+        await loadAll();
+    }
+
+    // District members: a checkable roster. Checking someone here sets their
+    // `district` text field to this district's name (and unchecking clears
+    // it), reusing the Missionaries tab's existing district field rather
+    // than adding a separate membership table.
+    function openDistrictMembersModal(id) {
+        const d = state.districts.find((x) => x.id === id);
+        document.getElementById("distMembersId").value = id;
+        const list = document.getElementById("distMembersChecklist");
+        list.innerHTML = state.missionaries.map((m) => {
+            const checked = (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase();
+            return `
+                <label class="member-check-row">
+                    <input type="checkbox" value="${m.id}" ${checked ? "checked" : ""}>
+                    ${avatarCircleHtml(m, "small")}
+                    <span>${esc(m.name)}</span>
+                </label>`;
+        }).join("");
+        document.getElementById("districtMembersModal").style.display = "flex";
+    }
+    function closeDistrictMembersModal() { document.getElementById("districtMembersModal").style.display = "none"; }
+
+    async function saveDistrictMembers() {
+        const id = document.getElementById("distMembersId").value;
+        const d = state.districts.find((x) => x.id === id);
+        const checkboxes = [...document.querySelectorAll("#distMembersChecklist input[type=checkbox]")];
+        const updates = [];
+        checkboxes.forEach((cb) => {
+            const m = state.missionaries.find((x) => x.id === cb.value);
+            if (!m) return;
+            const wasMember = (m.district || "").trim().toLowerCase() === d.name.trim().toLowerCase();
+            if (cb.checked && !wasMember) {
+                updates.push(db.from("missionaries").update({ district: d.name }).eq("id", m.id));
+            } else if (!cb.checked && wasMember) {
+                updates.push(db.from("missionaries").update({ district: "" }).eq("id", m.id));
+            }
+        });
+        await Promise.all(updates);
+        closeDistrictMembersModal();
+        await loadAll();
+    }
+
+    // Companionships
+    // Companionships -- each member links to a real Missionary profile
+    // (photo/name), same pattern as district leaders/members. Tapping a
+    // member opens their full profile popup.
+    function renderCompanionships() {
+        const el = document.getElementById("companionshipsList");
+        el.innerHTML = "";
+        state.companionships.forEach((comp) => {
+            const members = (comp.missionary_ids || [])
+                .map((id) => state.missionaries.find((m) => m.id === id))
+                .filter(Boolean);
+            const body = members.length > 0
+                ? `<div class="mini-avatar-grid" style="justify-content:center;">${members.map((m) => `
+                    <div class="mini-avatar" style="cursor:pointer;" onclick="openMissionaryProfile('${m.id}')">
+                        ${avatarCircleHtml(m)}
+                        <span>${esc(m.name)}</span>
+                    </div>`).join("")}</div>`
+                : `<div class="comp-block-legacy-names">${esc(comp.names)}</div>`;
+            el.innerHTML += `
+                <div class="comp-block">
+                    ${body}
+                    <div class="admin-controls" style="margin-top:14px; display:flex; gap:8px; justify-content:center;">
+                        <button class="btn btn-outline btn-sm" onclick="openCompanionshipModal('${comp.id}')">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCompanionship('${comp.id}')">Remove</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function openCompanionshipModal(id = null) {
+        if (state.missionaries.length === 0) {
+            alert("Add a missionary first (Missionaries tab), then come back to build a companionship.");
+            return;
+        }
+        document.getElementById("compId").value = id || "";
+        document.getElementById("companionshipModalTitle").innerText = id ? "Edit Companionship" : "Add Companionship";
+        const comp = id ? state.companionships.find((c) => c.id === id) : null;
+        const currentIds = comp?.missionary_ids || [];
+        document.getElementById("companionshipChecklist").innerHTML = state.missionaries.map((m) => `
+            <label class="member-check-row">
+                <input type="checkbox" value="${m.id}" ${currentIds.includes(m.id) ? "checked" : ""}>
+                ${avatarCircleHtml(m, "small")}
+                <span>${esc(m.name)}</span>
+            </label>`).join("");
+        document.getElementById("companionshipModal").style.display = "flex";
+    }
+    function closeCompanionshipModal() { document.getElementById("companionshipModal").style.display = "none"; }
+
+    async function saveCompanionship() {
+        const id = document.getElementById("compId").value;
+        const checked = [...document.querySelectorAll("#companionshipChecklist input:checked")].map((cb) => cb.value);
+        if (checked.length < 2) { alert("Select at least 2 missionaries."); return; }
+        const names = checked.map((mid) => state.missionaries.find((m) => m.id === mid)?.name).filter(Boolean).join(", ");
+        const payload = { missionary_ids: checked, names };
+        let error;
+        if (id) {
+            ({ error } = await db.from("companionships").update(payload).eq("id", id));
+        } else {
+            ({ error } = await db.from("companionships").insert(payload));
+        }
+        if (error) { alert(error.message); return; }
+        closeCompanionshipModal();
+        await loadAll();
+    }
+
+    async function deleteCompanionship(id) {
+        if (!confirm("Delete this companionship block?")) return;
+        await db.from("companionships").delete().eq("id", id);
+        await loadAll();
+    }
+
+    // Search / filter (pure client-side DOM filtering, unchanged from before)
+    function filterMissionaries() {
+        const search = document.getElementById("missionarySearch");
+        if (!search) return;
+        const query = search.value.toLowerCase();
+        document.querySelectorAll(".missionary-card").forEach((card) => {
+            const nameEl = card.querySelector(".missionary-name");
+            if (nameEl) card.style.display = nameEl.innerText.toLowerCase().includes(query) ? "block" : "none";
+        });
+    }
+
+    function filterCompanionships() {
+        const search = document.getElementById("companionshipSearch");
+        if (!search) return;
+        const query = search.value.toLowerCase();
+        document.querySelectorAll(".comp-block").forEach((block) => {
+            block.style.display = block.innerText.toLowerCase().includes(query) ? "block" : "none";
+        });
+    }
+
+    // Missionaries -- collapsed: square photo + name only. Click to expand the rest.
+    function renderMissionaries() {
+        const el = document.getElementById("missionaryList");
+        el.innerHTML = "";
+        state.missionaries.forEach((m) => {
+            const initial = (m.name || "?").trim().charAt(0).toUpperCase();
+            const avatar = m.photo_url
+                ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+                : `<div class="initial-fallback">${esc(m.emoji || initial)}</div>`;
+            el.innerHTML += `
+                <div class="missionary-card" id="miss-card-${m.id}" onclick="openMissionaryProfile('${m.id}')">
+                    <div class="missionary-photo-tile">${avatar}</div>
+                    <div class="missionary-summary-footer">
+                        <h3 class="missionary-name">${esc(m.name)}</h3>
+                    </div>
+                </div>`;
+        });
+    }
+
+    // Full-screen profile popup
+    let currentProfileMissionaryId = null;
+
+    function openMissionaryProfile(id) {
+        const m = state.missionaries.find((x) => x.id === id);
+        if (!m) return;
+        currentProfileMissionaryId = id;
+
+        const initial = (m.name || "?").trim().charAt(0).toUpperCase();
+        document.getElementById("profilePopupPhoto").innerHTML = m.photo_url
+            ? `<img src="${esc(m.photo_url)}" alt="${esc(m.name)}">`
+            : `<div class="initial-fallback">${esc(m.emoji || initial)}</div>`;
+
+        const roleBadge = m.service_role ? `<span class="verified-badge">${icon("check", 12)}${esc(m.service_role)}</span>` : "";
+        document.getElementById("profilePopupName").innerHTML = `${esc(m.name)}${roleBadge}`;
+
+        const bio = m.companion && m.district
+            ? `Serving with ${m.companion} in ${m.district}.`
+            : m.companion ? `Serving with ${m.companion}.`
+            : m.district ? `Serving in ${m.district}.`
+            : "";
+        document.getElementById("profilePopupSubtitle").textContent = bio;
+
+        document.getElementById("profilePopupBadges").innerHTML =
+            daysUntilBirthday(m.birthday) === 0 ? `<span class="badge-pill badge-today">Birthday Today</span>` : "";
+
+        document.getElementById("profilePopupCookieBanner").textContent = `${m.name} has ${m.cookies || 0} cookies`;
+        document.getElementById("profilePopupCookieScore").textContent = m.cookies || 0;
+
+        document.getElementById("profilePopupPhone").innerHTML = phoneRow(m.phone);
+        document.getElementById("profilePopupInfo").innerHTML = `
+            <p style="font-size: 0.92em; color: var(--text-muted); line-height:1.9; margin-top: 10px;">
+                <strong style="color:var(--text-main);">Sites:</strong> ${m.sites ? esc(m.sites) : "—"}<br>
+                <strong style="color:var(--text-main);">Birthday:</strong> ${m.birthday ? esc(m.birthday) : "—"}
+            </p>`;
+
+        document.getElementById("missionaryProfileModal").style.display = "flex";
+    }
+
+    function closeMissionaryProfile() {
+        document.getElementById("missionaryProfileModal").style.display = "none";
+        currentProfileMissionaryId = null;
+    }
+
+    function editFromMissionaryProfile() {
+        const id = currentProfileMissionaryId;
+        closeMissionaryProfile();
+        openProfileModal(id);
+    }
+
+    async function addCookie(event) {
+        const id = currentProfileMissionaryId;
+        if (!id) return;
+        const { error } = await db.rpc("add_cookie", { p_missionary_id: id });
+        if (error) { alert(error.message); return; }
+        const m = state.missionaries.find((x) => x.id === id);
+        if (m) {
+            m.cookies = (m.cookies || 0) + 1;
+            document.getElementById("profilePopupCookieScore").innerText = m.cookies;
+            document.getElementById("profilePopupCookieBanner").innerText = `${m.name} has ${m.cookies} cookies`;
+
+            const anchor = document.getElementById("profilePopupCookieAnchor");
+            const coin = document.createElement("div");
+            coin.innerText = "🍪";
+            coin.className = "coin-anim";
+            const rect = event.target.getBoundingClientRect();
+            const anchorRect = anchor.getBoundingClientRect();
+            coin.style.left = (rect.left - anchorRect.left) + "px";
+            coin.style.top = (rect.top - anchorRect.top) + "px";
+            anchor.appendChild(coin);
+            setTimeout(() => coin.remove(), 650);
+        }
+    }
+
+    function setAvatarPreview(photoUrl, emoji) {
+        const preview = document.getElementById("profAvatarPreview");
+        preview.innerHTML = photoUrl ? `<img src="${esc(photoUrl)}" alt="Preview">` : esc(emoji || "?");
+    }
+
+    function previewSelectedPhoto(input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById("profAvatarPreview").innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function openProfileModal(id = null) {
+        const modal = document.getElementById("profileModal");
+        document.getElementById("roleSelectorDiv").style.display = state.isAdmin ? "block" : "none";
+        document.getElementById("profPhotoFile").value = "";
+
+        if (id) {
+            const m = state.missionaries.find((x) => x.id === id);
+            document.getElementById("modalTitle").innerText = "Edit Profile";
+            document.getElementById("profId").value = m.id;
+            document.getElementById("profName").value = m.name;
+            document.getElementById("profEmoji").value = m.emoji || "";
+            document.getElementById("profColor").value = m.color || "#2f6fed";
+            document.getElementById("profRole").value = m.service_role || "";
+            document.getElementById("profPhone").value = m.phone || "";
+            document.getElementById("profSites").value = m.sites || "";
+            document.getElementById("profBirthday").value = m.birthday || "";
+            document.getElementById("profStartDate").value = m.start_date || "";
+            document.getElementById("profCompanion").value = m.companion || "";
+            document.getElementById("profDistrict").value = m.district || "";
+            setAvatarPreview(m.photo_url, m.emoji);
+        } else {
+            document.getElementById("modalTitle").innerText = "Add New Missionary";
+            document.getElementById("profId").value = "";
+            document.getElementById("profName").value = "";
+            document.getElementById("profEmoji").value = "";
+            document.getElementById("profColor").value = "#2f6fed";
+            document.getElementById("profRole").value = "";
+            document.getElementById("profPhone").value = "";
+            document.getElementById("profSites").value = "";
+            document.getElementById("profBirthday").value = "";
+            document.getElementById("profStartDate").value = "";
+            document.getElementById("profCompanion").value = "";
+            document.getElementById("profDistrict").value = "";
+            setAvatarPreview(null, "?");
+        }
+        document.getElementById("profileError").textContent = "";
+        modal.style.display = "flex";
+    }
+
+    function closeProfileModal() {
+        document.getElementById("profileModal").style.display = "none";
+    }
+
+    async function uploadPhoto(missionaryId, file) {
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `${missionaryId}/photo.${ext}`;
+        const { error: uploadError } = await db.storage.from("missionary-photos").upload(path, file, {
+            upsert: true, cacheControl: "3600"
+        });
+        if (uploadError) throw uploadError;
+        const { data } = db.storage.from("missionary-photos").getPublicUrl(path);
+        const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
+        const { error: updateError } = await db.from("missionaries").update({ photo_url: publicUrl }).eq("id", missionaryId);
+        if (updateError) throw updateError;
+    }
+
+    async function saveProfile() {
+        const id = document.getElementById("profId").value;
+        const errEl = document.getElementById("profileError");
+        const phone = document.getElementById("profPhone").value.trim();
+
+        const payload = {
+            name: document.getElementById("profName").value,
+            emoji: document.getElementById("profEmoji").value,
+            color: document.getElementById("profColor").value,
+            phone,
+            sites: document.getElementById("profSites").value,
+            birthday: document.getElementById("profBirthday").value,
+            start_date: document.getElementById("profStartDate").value || null,
+            companion: document.getElementById("profCompanion").value,
+            district: document.getElementById("profDistrict").value
+        };
+        if (state.isAdmin) payload.service_role = document.getElementById("profRole").value || null;
+
+        let targetId = id;
+        let error;
+        if (id) {
+            ({ error } = await db.from("missionaries").update(payload).eq("id", id));
+        } else {
+            const { data, error: insertError } = await db.from("missionaries").insert(payload).select().single();
+            error = insertError;
+            targetId = data?.id;
+        }
+        if (error) { errEl.textContent = error.message; return; }
+
+        const file = document.getElementById("profPhotoFile").files[0];
+        if (file && targetId) {
+            try {
+                await uploadPhoto(targetId, file);
+            } catch (e) {
+                errEl.textContent = `Profile saved, but photo upload failed: ${e.message}`;
+                await loadAll();
+                return;
+            }
+        }
+
+        document.getElementById("profileModal").style.display = "none";
+        await loadAll();
+    }
+
+    async function deleteProfile() {
+        const id = document.getElementById("profId").value;
+        if (!id || !confirm("Are you sure you want to delete this missionary?")) return;
+        const { error } = await db.from("missionaries").delete().eq("id", id);
+        if (error) { alert(error.message); return; }
+        document.getElementById("profileModal").style.display = "none";
+        await loadAll();
+    }
+</script>
+</body>
+</html>
