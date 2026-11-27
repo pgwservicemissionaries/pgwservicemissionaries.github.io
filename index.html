@@ -1087,6 +1087,9 @@
                     </span>
                 </summary>
                 <div class="section-body">
+                    <div style="margin-bottom: 14px;">
+                        <button class="btn" onclick="openCalendarEventModal()">+ Add Event</button>
+                    </div>
                     <div id="upcomingEventsList"></div>
                     <button class="btn btn-outline btn-block" onclick="switchTab('calendar')" style="margin-top:12px;">View Full Calendar</button>
                 </div>
@@ -1349,8 +1352,28 @@
             <p class="field-hint">Gatherings also show in their own "Upcoming Gatherings" section on the General tab.</p>
 
             <label>Date</label>
-            <input type="date" id="cevDate">
-            <p class="field-hint">Leave blank only if there's truly no fixed date -- it'll show under "Other Events" below the calendar instead of on the grid.</p>
+            <input type="date" id="cevDate" onclick="try{this.showPicker()}catch(e){}" onchange="if(document.getElementById('cevDateText')) document.getElementById('cevDateText').value = this.value" style="cursor: pointer;">
+            <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="setEventDatePreset('today')">Today</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="setEventDatePreset('tomorrow')">Tomorrow</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="setEventDatePreset('sunday')">This Sunday</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="setEventDatePreset('next-sunday')">Next Sunday</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="setEventDatePreset('')">Clear</button>
+                <button type="button" class="btn btn-outline btn-sm" id="toggleMiniCalendarBtn" onclick="toggleMiniCalendar()" style="color: var(--primary); font-weight: 800;">📅 Calendar</button>
+            </div>
+            <div id="miniCalendarWrap" style="display: none; margin-top: 10px; background: var(--secondary); border: 1px solid var(--border); border-radius: 14px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="changeMiniCalendarMonth(-1)" style="padding: 3px 8px;">&lt;</button>
+                    <strong id="miniCalMonthLabel" style="color: var(--text-main); font-size: 0.9rem;"></strong>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="changeMiniCalendarMonth(1)" style="padding: 3px 8px;">&gt;</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">
+                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                </div>
+                <div id="miniCalGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center;"></div>
+            </div>
+            <input type="text" id="cevDateText" placeholder="Or type date: e.g. 11/27/2026 or Dec 5" oninput="syncDateFromText(this.value)" style="margin-top: 8px;">
+            <p class="field-hint">Pick from calendar, click a quick button, or type MM/DD/YYYY. Leave blank for unscheduled events.</p>
 
             <div class="checkbox-row">
                 <input type="checkbox" id="cevRepeats">
@@ -2410,6 +2433,137 @@
     }
 
     // Add/Edit event modal
+    let miniCalYear, miniCalMonth;
+
+    function toggleMiniCalendar() {
+        const wrap = document.getElementById("miniCalendarWrap");
+        if (!wrap) return;
+        const isHidden = wrap.style.display === "none";
+        wrap.style.display = isHidden ? "block" : "none";
+        const btn = document.getElementById("toggleMiniCalendarBtn");
+        if (btn) btn.textContent = isHidden ? "✕ Close" : "📅 Calendar";
+        if (isHidden) {
+            const curVal = document.getElementById("cevDate").value;
+            const curDate = curVal ? new Date(`${curVal}T00:00:00`) : new Date();
+            miniCalYear = isNaN(curDate.getTime()) ? new Date().getFullYear() : curDate.getFullYear();
+            miniCalMonth = isNaN(curDate.getTime()) ? new Date().getMonth() : curDate.getMonth();
+            renderMiniCalendar();
+        }
+    }
+
+    function changeMiniCalendarMonth(delta) {
+        miniCalMonth += delta;
+        if (miniCalMonth < 0) { miniCalMonth = 11; miniCalYear--; }
+        if (miniCalMonth > 11) { miniCalMonth = 0; miniCalYear++; }
+        renderMiniCalendar();
+    }
+
+    function renderMiniCalendar() {
+        const label = document.getElementById("miniCalMonthLabel");
+        if (label) label.textContent = `${MONTH_LABELS[miniCalMonth]} ${miniCalYear}`;
+        const grid = document.getElementById("miniCalGrid");
+        if (!grid) return;
+        const firstOfMonth = new Date(miniCalYear, miniCalMonth, 1);
+        const startWeekday = firstOfMonth.getDay();
+        const daysInMonth = new Date(miniCalYear, miniCalMonth + 1, 0).getDate();
+        const selectedIso = document.getElementById("cevDate").value;
+        const todayIso = toIsoDate(new Date());
+
+        let html = "";
+        for (let i = 0; i < startWeekday; i++) {
+            html += `<div></div>`;
+        }
+        for (let d = 1; d <= daysInMonth; d++) {
+            const cellDate = new Date(miniCalYear, miniCalMonth, d);
+            const iso = toIsoDate(cellDate);
+            const isSelected = iso === selectedIso;
+            const isToday = iso === todayIso;
+            const bg = isSelected ? "var(--primary)" : isToday ? "var(--primary-light)" : "transparent";
+            const color = isSelected ? "#fff" : isToday ? "var(--primary)" : "var(--text-main)";
+            const fontWeight = isSelected || isToday ? "800" : "500";
+            html += `<button type="button" onclick="selectMiniCalDate('${iso}')" style="background:${bg}; color:${color}; font-weight:${fontWeight}; border:none; border-radius:8px; padding:6px 0; font-size:0.85rem; cursor:pointer; font-family:inherit;">${d}</button>`;
+        }
+        grid.innerHTML = html;
+    }
+
+    function selectMiniCalDate(iso) {
+        document.getElementById("cevDate").value = iso;
+        const txt = document.getElementById("cevDateText");
+        if (txt) txt.value = iso;
+        renderMiniCalendar();
+    }
+
+    function setEventDatePreset(preset) {
+        if (!preset) {
+            document.getElementById("cevDate").value = "";
+            const txt = document.getElementById("cevDateText");
+            if (txt) txt.value = "";
+            const wrap = document.getElementById("miniCalendarWrap");
+            if (wrap && wrap.style.display !== "none") renderMiniCalendar();
+            return;
+        }
+        const d = new Date();
+        if (preset === "today") {
+            // today
+        } else if (preset === "tomorrow") {
+            d.setDate(d.getDate() + 1);
+        } else if (preset === "sunday") {
+            const day = d.getDay();
+            const diff = (7 - day) % 7;
+            d.setDate(d.getDate() + diff);
+        } else if (preset === "next-sunday") {
+            const day = d.getDay();
+            const diff = ((7 - day) % 7) || 7;
+            d.setDate(d.getDate() + diff);
+        }
+        const iso = toIsoDate(d);
+        document.getElementById("cevDate").value = iso;
+        const txt = document.getElementById("cevDateText");
+        if (txt) txt.value = iso;
+        const wrap = document.getElementById("miniCalendarWrap");
+        if (wrap && wrap.style.display !== "none") {
+            miniCalYear = d.getFullYear();
+            miniCalMonth = d.getMonth();
+            renderMiniCalendar();
+        }
+    }
+
+    function parseDateToIso(str) {
+        if (!str) return null;
+        str = String(str).trim();
+        if (!str) return null;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+        const slashMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        if (slashMatch) {
+            const m = slashMatch[1].padStart(2, "0");
+            const d = slashMatch[2].padStart(2, "0");
+            const y = slashMatch[3];
+            return `${y}-${m}-${d}`;
+        }
+        const slashShort = str.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
+        if (slashShort) {
+            const m = slashShort[1].padStart(2, "0");
+            const d = slashShort[2].padStart(2, "0");
+            const y = new Date().getFullYear();
+            return `${y}-${m}-${d}`;
+        }
+        let parsed = new Date(str);
+        if (isNaN(parsed.getTime())) {
+            parsed = new Date(`${str} ${new Date().getFullYear()}`);
+        }
+        if (!isNaN(parsed.getTime())) {
+            return toIsoDate(parsed);
+        }
+        return null;
+    }
+
+    function syncDateFromText(val) {
+        const iso = parseDateToIso(val);
+        if (iso) {
+            document.getElementById("cevDate").value = iso;
+        }
+    }
+
     function openCalendarEventModal(id = null) {
         if (id) {
             const ev = state.calendarEvents.find((x) => x.id === id);
@@ -2418,6 +2572,8 @@
             document.getElementById("cevTitle").value = ev.title || "";
             document.getElementById("cevType").value = ev.event_type || "meeting";
             document.getElementById("cevDate").value = ev.event_date_iso || "";
+            const txt = document.getElementById("cevDateText");
+            if (txt) txt.value = ev.event_date_iso || "";
             document.getElementById("cevRepeats").checked = !!ev.repeats_weekly;
             document.getElementById("cevTimeLabel").value = ev.event_date || "";
             document.getElementById("cevDesc").value = ev.description || "";
@@ -2430,6 +2586,8 @@
             document.getElementById("cevTitle").value = "";
             document.getElementById("cevType").value = "meeting";
             document.getElementById("cevDate").value = "";
+            const txt = document.getElementById("cevDateText");
+            if (txt) txt.value = "";
             document.getElementById("cevRepeats").checked = false;
             document.getElementById("cevTimeLabel").value = "";
             document.getElementById("cevDesc").value = "";
@@ -2437,16 +2595,22 @@
             document.getElementById("cevLink").value = "";
             document.getElementById("cevColor").value = "";
         }
+        const wrap = document.getElementById("miniCalendarWrap");
+        if (wrap) wrap.style.display = "none";
+        const calBtn = document.getElementById("toggleMiniCalendarBtn");
+        if (calBtn) calBtn.textContent = "📅 Calendar";
         document.getElementById("calendarEventModal").style.display = "flex";
     }
     function closeCalendarEventModal() { document.getElementById("calendarEventModal").style.display = "none"; }
 
     async function saveCalendarEvent() {
         const id = document.getElementById("cevId").value;
+        const rawDate = document.getElementById("cevDate").value || (document.getElementById("cevDateText") ? document.getElementById("cevDateText").value : "");
+        const isoDate = parseDateToIso(rawDate);
         const payload = {
             title: document.getElementById("cevTitle").value,
             event_type: document.getElementById("cevType").value,
-            event_date_iso: document.getElementById("cevDate").value || null,
+            event_date_iso: isoDate,
             repeats_weekly: document.getElementById("cevRepeats").checked,
             event_date: document.getElementById("cevTimeLabel").value,
             description: document.getElementById("cevDesc").value,
